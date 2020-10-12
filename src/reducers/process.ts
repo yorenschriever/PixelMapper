@@ -1,5 +1,4 @@
 
-import { start } from "repl"
 import { Pixel, Position } from "../entities"
 import { CompressedImage } from "../entities/compressedImage"
 

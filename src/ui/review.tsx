@@ -1,11 +1,13 @@
+import useSwitch from '@react-hook/switch'
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { applyMiddleware } from 'redux'
 import { Pixel, CompressedImage } from '../entities'
 import { State } from '../reducers'
 import { changePosition, deleteLowConfidence, interpolate, interpolateAll } from '../reducers/process'
+import { BurgerMenu } from './burgerMenu'
+import { ExportButton } from './exportButton'
 import { compressedImageToCanvas, connectPositions, DrawPixelType, drawPosition } from './imageUtils'
-import { DownloadStateButton } from './uploadDownloadState'
+
 
 const getAlternatives = (pixel:Pixel) => pixel.alternativePositions.slice(0,5).map((pos,index)=> ({
     label: String.fromCharCode(index+65),
@@ -52,11 +54,6 @@ export const Review = () => {
         })
     }, [pixels, previewImage, activePixel])
 
-    // const setActivePixel = (index:number) => {
-    //     setActivePixelState(index)
-    //     //TODO devicesController.highlight
-    // }
-
     const logPos = (event: any) => {
         const rect = canvas.current!.getBoundingClientRect()
         const x = event.clientX - rect.left
@@ -87,11 +84,15 @@ export const Review = () => {
             onClick={logPos}
         />
         <PixelCarousel pixels={pixels} activePixel={activePixel} setActivePixel={setActivePixel} setWaitManualPlacement={setWaitManualPlacement} show={waitManualPlacement===undefined}/>
-        <DownloadStateButton>Download state</DownloadStateButton>
-        <button onClick={()=>dispatch(interpolateAll())}>Interpolate all</button>
-        
-        <button onClick={()=>dispatch(deleteLowConfidence(0.5))}>delete &lt; 50%</button>
-        <button onClick={()=>dispatch(deleteLowConfidence(0.25))}>delete &lt; 25%</button>
+
+        <BurgerMenu>
+            <button onClick={()=>dispatch(interpolateAll())}>Interpolate all</button>
+            
+            <button onClick={()=>dispatch(deleteLowConfidence(0.5))}>delete &lt; 50%</button>
+            <button onClick={()=>dispatch(deleteLowConfidence(0.25))}>delete &lt; 25%</button>
+
+            <ExportButton normalize={true}>Export CSV</ExportButton>
+        </BurgerMenu>
     </>
 }
 
@@ -105,7 +106,7 @@ type PixelCarouselProps = {
 
 const PixelCarousel = ({ pixels, activePixel, setActivePixel, setWaitManualPlacement,show }: PixelCarouselProps) => {
     const pixelPanel = useRef<HTMLDivElement | null>(null)
-    const [positionMenuOpen,setPositionMenuOpen] = useState<boolean>(false)
+    const [positionMenuOpen,setPositionMenuOpen] = useSwitch(false)
     const [positionMenuX,setPositionMenuX] = useState<string>("0")
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -120,11 +121,6 @@ const PixelCarousel = ({ pixels, activePixel, setActivePixel, setWaitManualPlace
         }
     }
 
-    // const openPixelMenu = (x:number,index:number) =>{
-    //     setPositionMenuOpen(true)
-    //     setPositionMenuX(x)
-    // }
-
     return (
         <div style={{position:"fixed", bottom:"25px", width:"100vw", display: show?"block":"none"}}>
         
@@ -133,7 +129,7 @@ const PixelCarousel = ({ pixels, activePixel, setActivePixel, setWaitManualPlace
                 onScroll={handleScroll}
             >
 
-                {positionMenuOpen && <PositionMenu pixel={pixels[activePixel]} setWaitManualPlacement={setWaitManualPlacement} closeMenu={()=>setPositionMenuOpen(false)} x={positionMenuX}/>}
+                {positionMenuOpen && <PositionMenu pixel={pixels[activePixel]} setWaitManualPlacement={setWaitManualPlacement} closeMenu={setPositionMenuOpen.off} x={positionMenuX}/>}
                 
                 <div style={{ flex: "0 0 50%", }} ></div>
                 {pixels.map(pixel => (
@@ -143,7 +139,7 @@ const PixelCarousel = ({ pixels, activePixel, setActivePixel, setWaitManualPlace
                         pixel={pixel}
                         activePixel={activePixel}
                         setActivePixel={setActivePixel}
-                        openPixelMenu={()=>setPositionMenuOpen(true)}
+                        setPositionMenuOpen={setPositionMenuOpen}
                         setPositionMenuX={setPositionMenuX}
                     />
                 ))}
@@ -156,18 +152,12 @@ type PixelPanelProps = {
     pixel:Pixel,
     activePixel: number,
     setActivePixel: (index: number) => void
-    openPixelMenu: (index:number) => void
+    setPositionMenuOpen: (() => void) & {on:()=>void}
     setPositionMenuX: (x:string)=> void
     ref2: React.Ref<HTMLDivElement>|undefined
 }
 
-const PixelPanel = ({pixel, activePixel,setActivePixel,ref2, openPixelMenu, setPositionMenuX}:PixelPanelProps) => {
-
-    // let backgroundColor="rgba(255,255,255,0.4)"
-    // if (!pixel.position) backgroundColor="rgba(255,0,0,0.5)"
-    // else if (pixel.position?.confidence < 0.5) backgroundColor="rgba(255,127,0,0.5)"
-    // if (pixel.index === activePixel) backgroundColor="rgba(255,255,255,0.7)"
-    // if (pixel.index === activePixel && !pixel.position) backgroundColor="rgba(255,0,0,0.7)"
+const PixelPanel = ({pixel, activePixel,setActivePixel,ref2, setPositionMenuOpen, setPositionMenuX}:PixelPanelProps) => {
 
     let rgb = "255,255,255"
     if (!pixel.position) rgb= "255,0,0"
@@ -184,7 +174,10 @@ const PixelPanel = ({pixel, activePixel,setActivePixel,ref2, openPixelMenu, setP
             setPositionMenuX(e.currentTarget.offsetLeft - e.currentTarget.offsetParent!.scrollLeft + (75/2) + "px")
         }}
         onClick={e => {
-            openPixelMenu(pixel.index); 
+            //console.log({index:pixel.index,activePixel},pixel.index === activePixel)
+            //if (pixel.index === activePixel) setPositionMenuOpen(); //toggle menu open
+            //else 
+            setPositionMenuOpen.on(); //always open menu when switching to another pixel
             setPositionMenuX(e.currentTarget.offsetLeft - e.currentTarget.offsetParent!.scrollLeft + (75/2) + "px")
         }}
         style={{
@@ -214,10 +207,6 @@ type PositionMenuProps = {
     setWaitManualPlacement:(index: number) => void
     closeMenu: ()=>void
     x:string
-    // activePixel: number,
-    // setActivePixel: (index: number) => void
-    // openPixelMenu: (x:number,index:number) => void
-    // ref2: React.Ref<HTMLDivElement>|undefined
 }
 
 const PositionMenu = ({pixel, setWaitManualPlacement, closeMenu,x}:PositionMenuProps)=> {
@@ -232,7 +221,6 @@ const PositionMenu = ({pixel, setWaitManualPlacement, closeMenu,x}:PositionMenuP
     <div
         style={{
             position:"fixed",
-            //left:"50%",
             left:x,
             width:"125px",
             bottom:"150px",

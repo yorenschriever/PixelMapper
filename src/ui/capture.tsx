@@ -6,6 +6,7 @@ import { States } from "../core/IConnection";
 import { Device } from "../entities";
 import { ActiveStep, addImages, setStep, State } from "../reducers";
 import { setPreview } from "../reducers/process";
+import { BurgerMenu } from "./burgerMenu";
 import { videoToCompressedImage, videoToImageData } from "./imageUtils";
 
 export const Capture = () => {

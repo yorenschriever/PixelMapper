@@ -29,7 +29,7 @@ export enum ActiveStep
     Capture='Capture',
     Process='Process',
     Review='Review',
-    Export='Export'
+    //Export='Export'
 }
 
 export type NavigationState = {

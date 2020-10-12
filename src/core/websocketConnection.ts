@@ -4,11 +4,15 @@ import { IConnection, StateListener, States } from "./IConnection"
 
 export class WebsocketConnection implements IConnection
 {
-    socket: WebSocket
+    socket?: WebSocket
     listeners: StateListener[] = []
 
     constructor(device:Device){
-        this.socket = new WebSocket('wss://'+device.hostname+'/map')
+        try {
+            this.socket = new WebSocket('wss://'+device.hostname+'/map')
+        } catch (e) {
+            return;
+        }
 
         const updateState = () => { this.listeners.forEach(l=>l(this.getState())) }
 
@@ -18,6 +22,8 @@ export class WebsocketConnection implements IConnection
     }
 
     getState = () => {
+        if (!this.socket)
+            return States.Disconnected
         switch (this.socket.readyState){
             case this.socket.CLOSED:
                 return States.Disconnected
@@ -35,10 +41,10 @@ export class WebsocketConnection implements IConnection
     sendData = (values:boolean[]) => {
         if (this.getState() !== States.Connected)
             throw Error('WebsocketDevice cannot set data, because it is is state ' + this.getState());
-        this.socket.send(new Uint8Array(values.map(i=>i?255:0)))
+        this.socket!.send(new Uint8Array(values.map(i=>i?255:0)))
 
         return new Promise<void>((acc) => {
-            this.socket.onmessage = (event) => { acc() }
+            this.socket!.onmessage = (event) => { acc() }
         })
     }
 

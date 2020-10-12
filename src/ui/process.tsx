@@ -5,8 +5,8 @@ import PixelMapperWorker from "worker-loader!../pixelMapper.worker.js"
 import { CompressedImage, Pixel,Position } from "../entities"
 import { ActiveStep, CaptureState, setStep, State } from "../reducers"
 import { clearPixels, solvedPixel } from "../reducers/process"
+import { BurgerMenu } from "./burgerMenu"
 import { compressedImageToCanvas, drawPosition, DrawPixelType } from "./imageUtils"
-import { DownloadStateButton } from "./uploadDownloadState"
 
 export const Process = () => {
     const dispatch = useDispatch()
@@ -107,6 +107,7 @@ export const Process = () => {
         {status}
         {error}
         {debug}
-        <DownloadStateButton>Download</DownloadStateButton>
+        {/* <DownloadStateButton>Download</DownloadStateButton> */}
+        <BurgerMenu/>
     </>
 }

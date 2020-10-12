@@ -1,7 +1,6 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import { store } from '..'
-import { Pixel } from '../entities'
 import { ActiveStep, setStep } from '../reducers'
 import { loadState, ProcessState } from '../reducers/process'
 
@@ -20,9 +19,9 @@ export const DownloadStateButton = ({children}:{children:ReactNode}) => {
 
 export const UploadStateButton = ({children}:{children:ReactNode}) => {
     const dispatch=  useDispatch()
+    const input = useRef<HTMLInputElement|null>(null)
 
     const uploadState=()=>{
-        var fileUpload = document.getElementById("fileUpload")! as HTMLInputElement;
         var reader = new FileReader();
         reader.onload = function (e) {
 
@@ -34,11 +33,11 @@ export const UploadStateButton = ({children}:{children:ReactNode}) => {
             dispatch(loadState(state))
             dispatch(setStep(ActiveStep.Review))
         }
-        reader.readAsText(fileUpload.files![0]);
+        reader.readAsText(input.current!.files![0]);
     }
     
-
     return <>
-        <input type="file" id="fileUpload" onChange={uploadState} />
-        </>
+        <input type="file" ref={input} onChange={uploadState} style={{display:"none"}}/>
+        <button onClick={()=>input.current!.click()}>{children}</button>
+    </>
 }
