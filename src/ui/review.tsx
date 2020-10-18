@@ -194,8 +194,9 @@ const PixelPanel = ({pixel, activePixel,setActivePixel,ref2, setPositionMenuOpen
             color:"rgba(255,255,255,0.8)",
             fontSize: "32px",
             paddingTop:"20px",
-            cursor:"pointer"
+            cursor:"pointer",
         }}
+        className="contentVisibility"
     >
         {pixel.index.toString()}
         {pixel.position && <div style={{fontSize:"12px"}}>Confidence:<br/>{Math.round(pixel.position.confidence*100)}%</div>}

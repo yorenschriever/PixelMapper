@@ -108,6 +108,6 @@ export const Process = () => {
         {error}
         {debug}
         {/* <DownloadStateButton>Download</DownloadStateButton> */}
-        <BurgerMenu/>
+        {/* <BurgerMenu/> */}
     </>
 }

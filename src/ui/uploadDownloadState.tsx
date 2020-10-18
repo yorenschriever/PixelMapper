@@ -1,6 +1,7 @@
 import React, { ReactNode, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import { store } from '..'
+import { Pixel } from '../entities'
 import { ActiveStep, setStep } from '../reducers'
 import { loadState, ProcessState } from '../reducers/process'
 
