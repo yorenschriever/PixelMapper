@@ -16,5 +16,143 @@ code {
 
 button {
   width:100%;
-  height:30px;
+  height:40px;
+}
+
+.burgerMenu {
+  position:fixed; 
+  right: 25px;
+  top:25px; 
+  display:flex;
+  flex-direction:column; 
+  align-items:flex-end;
+}
+
+.burgerMenuButton {
+  font-size:20px;
+  border-radius:50%;
+  width:40px;
+  height:40px;
+}
+
+.captureButton {
+  position: absolute;
+  left: 25px;
+  top: 25px;
+  border-radius: 50%;
+  height: 50px;
+  width: 50px;
+}
+
+.videoPreview {
+  max-width: 100vw;
+  max-height: 100vh;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.processCanvas {
+  max-width: 100vw;
+  max-height: 100vh;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.processStatus {
+  position:absolute;
+  color:#fff;
+}
+
+
+.pixelCarousel {
+  position: fixed;
+  bottom: 25px;
+  width: 100vw;
+}
+
+.pixelCarousel .scroller {
+  width: 100%;
+  overflow-x: scroll;
+  display: flex;
+  position: relative;
+}
+
+.pixelCarousel .padder {
+  flex: 0 0 50%
+}
+
+.pixelPanel {
+  width: 75px;
+  height: 75px;
+  flex: 0 0 75px;
+  border: 1px solid;
+  border-radius: 8px;
+  margin: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: rgba(255,255,255,0.8);
+  font-size: 32px;
+  padding-top: 20px;
+  cursor: pointer;
+
+  background-color:rgba(255,255,255,0.4);
+  border-color:rgba(255,255,255,1);
+}
+
+.pixelPanel.orange {
+  background-color:rgba(255,127,0,0.4);
+  border-color:rgba(255,127,0,1);
+}
+
+.pixelPanel.red {
+  background-color:rgba(255,0,0,0.4);
+  border-color:rgba(255,0,0,1);
+}
+
+.pixelPanel.active {
+  background-color:rgba(255,255,255,0.8);
+}
+
+.pixelPanel.orange.active {
+  background-color:rgba(255,127,0,0.8);
+}
+
+.pixelPanel.red.active {
+  background-color:rgba(255,0,0,0.8);
+}
+
+.pixelPanel .confidence {
+  font-size: 12px;
+}
+
+.positionMenu {
+  position: fixed;
+  width: 125px;  
+  bottom: 150px;
+  transform: translate(-50%, 0)
+}
+
+.devices {
+  background-color: #eee;
+  border: 1px solid #aaa;
+  max-width: 100vw;
+  width: 300px;
+  padding: 40px;
+
+  position: absolute;
+  top: 24px;
+  left: 50vw;
+  transform: translate(-50%, 0);
+}
+
+.devicePanel {
+  padding-bottom: 20px;
+  display:grid;
+  grid-template-columns:40%  60%;
+  grid-template-rows: 40px 40px 40px 40px;
+  align-items: center;
 }

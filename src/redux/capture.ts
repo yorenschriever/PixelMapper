@@ -7,7 +7,7 @@ export type AddImagesType = {
     sliceImages: CompressedImage[]
 }
 
-export const addImages = (whiteImage:CompressedImage,blackImage:CompressedImage,sliceImages:CompressedImage[]):AddImagesType => ({
+export const addImages = (whiteImage: CompressedImage, blackImage: CompressedImage, sliceImages: CompressedImage[]): AddImagesType => ({
     type: 'ADD_IMAGES',
     whiteImage,
     blackImage,
@@ -16,21 +16,22 @@ export const addImages = (whiteImage:CompressedImage,blackImage:CompressedImage,
 
 export type LoadCaptureStateType = {
     type: 'LOAD_CAPTURE_STATE'
-    state:CaptureState
+    state: CaptureState
 }
 
-export const loadCaptureState = (state:CaptureState):LoadCaptureStateType => ({
+export const loadCaptureState = (state: CaptureState): LoadCaptureStateType => ({
     type: 'LOAD_CAPTURE_STATE',
     state
 })
 
-export const captureReducer = (state : CaptureState = initialState, action : CaptureActionTypes) => {
+export const captureReducer = (state: CaptureState = initialState, action: CaptureActionTypes) => {
     switch (action.type) {
         case 'ADD_IMAGES':
-            return { ...state, 
+            return {
+                ...state,
                 blackImage: action.blackImage,
                 whiteImage: action.whiteImage,
-                images:action.sliceImages
+                images: action.sliceImages
             }
         case 'LOAD_CAPTURE_STATE':
             return action.state
@@ -44,11 +45,11 @@ export type CaptureActionTypes = AddImagesType | LoadCaptureStateType
 
 export type CaptureState = {
     blackImage?: CompressedImage
-    whiteImage?:CompressedImage
+    whiteImage?: CompressedImage
     images: CompressedImage[]
 }
 
-const initialState : CaptureState = 
+const initialState: CaptureState =
 {
     blackImage: undefined,
     whiteImage: undefined,

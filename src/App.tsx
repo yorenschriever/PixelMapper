@@ -1,8 +1,7 @@
 import React from 'react';
 import { useSelector } from "react-redux"
-import { ActiveStep, State } from './reducers';
+import { ActiveStep, State } from './redux';
 import { Process } from './ui/process';
-//import { Export } from './ui/export';
 import { Capture } from './ui/capture';
 import { Devices } from './ui/devices';
 import { Review } from './ui/review';
@@ -22,12 +21,9 @@ function App() {
             return <Process />
         case ActiveStep.Review:
             return <Review />
-        // case ActiveStep.Export:
-        //     return <Export />
         default:
             return <>Unknown step</>;
     }
-
 }
 
 export default App;

@@ -1,14 +1,13 @@
 import React, { ReactNode } from "react"
-import { ActiveStep, addImages, setStep} from "../reducers"
-import { useDispatch} from 'react-redux'
-import { setPreview } from "../reducers/process"
-import { filenameToCompressedImage } from "./imageUtils"
+import { ActiveStep, addImages, setStep } from "../redux"
+import { useDispatch } from 'react-redux'
+import { setPreview } from "../redux/process"
+import { filenameToCompressedImage } from "../imageUtils"
 
-export const LoadTestsetButton = ({children}:{children:ReactNode}) => {
+export const LoadTestsetButton = ({ children }: { children: ReactNode }) => {
     const dispatch = useDispatch()
 
-    const loadTestSet = async () =>
-    {
+    const loadTestSet = async () => {
         dispatch(addImages(
             await filenameToCompressedImage("testset/img9749.jpg"),
             await filenameToCompressedImage("testset/img9750.jpg"),

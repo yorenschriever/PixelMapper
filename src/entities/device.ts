@@ -1,4 +1,3 @@
-
 export type Device = {
     hostname: string
     port: number

@@ -6,22 +6,22 @@ import { WebsocketConnection } from "./websocketConnection";
 
 class ConnectionFactory {
 
-    connections : { [key: string]: IConnection; } = {};
+    connections: { [key: string]: IConnection; } = {};
 
-    getConnection(device:Device){
+    getConnection(device: Device) {
         const hash = deviceHash(device)
-        
+
         if (!this.connections[hash])
             this.connections[hash] = this.createConnection(device)
 
-        return this.connections[hash] 
+        return this.connections[hash]
     }
 
-    createConnection(device:Device){
+    createConnection(device: Device) {
         //todo proper factory here
         return new WebsocketConnection(device)
     }
 
 }
 
-export const connectionFactory  = new ConnectionFactory()
+export const connectionFactory = new ConnectionFactory()

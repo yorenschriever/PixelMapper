@@ -37,11 +37,9 @@ export type NavigationActionTypes = SetStepType | LoadNavigationStateType
 export enum ActiveStep
 {
     Devices='Devices',
-    //LoadTestset='LoadTestset',
     Capture='Capture',
     Process='Process',
-    Review='Review',
-    //Export='Export'
+    Review='Review'
 }
 
 export type NavigationState = {

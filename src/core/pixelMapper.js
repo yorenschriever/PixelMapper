@@ -1,54 +1,49 @@
-import { METHODS } from "http"
 import simpleBlobDetector from "./simpleBlobDetector"
 
-export class PixelMapper
-{
-    codedImage=[]
-    codedImageNegative=[]
+export class PixelMapper {
+    codedImage = []
+    codedImageNegative = []
 
-    numSlices=0
-    numPixels=0
+    numSlices = 0
+    numPixels = 0
 
     config = {
-        blur:11,
-        align:true,
-        imgWidth:1280,
-        livePreview:true,
-        connectPoints:true,
-        labelPoints:true
+        blur: 11,
+        align: true,
+        imgWidth: 1280,
+        livePreview: true,
+        connectPoints: true,
+        labelPoints: true
 
     }
 
     listener
 
-    constructor(listener)
-    {
-        this.listener=listener
+    constructor(listener) {
+        this.listener = listener
         console.log('test constructor')
     }
 
-    run = (whiteImage, blackImage, sliceImages, numPixels) =>
-    {
+    run = (whiteImage, blackImage, sliceImages, numPixels) => {
         this.sendStatus('initializing')
 
         this.numPixels = numPixels
         this.numSlices = sliceImages.length
 
         let preparedBlackImage = undefined;
-        if (blackImage)
-        {
+        if (blackImage) {
             this.sendStatus('preparing black image')
-            preparedBlackImage = this.prepareImage(blackImage,undefined,false)
+            preparedBlackImage = this.prepareImage(blackImage, undefined, false)
         }
 
         this.sendStatus('preparing start image')
-        let startImage = this.prepareImage(whiteImage,preparedBlackImage,true)
+        let startImage = this.prepareImage(whiteImage, preparedBlackImage, true)
 
         this.sendStatus('processing slice images')
-        this.codedImage=[]
-        this.codedImageNegative=[]
+        this.codedImage = []
+        this.codedImageNegative = []
         sliceImages.forEach(image => {
-            const prepared = this.prepareImage(image,preparedBlackImage,true)
+            const prepared = this.prepareImage(image, preparedBlackImage, true)
             this.codedImage.push(prepared)
             this.codedImageNegative.push(this.invertColors(prepared))
         })
@@ -57,17 +52,17 @@ export class PixelMapper
 
         blackImage.delete()
         whiteImage.delete()
-        sliceImages.forEach(i=>i.delete())
+        sliceImages.forEach(i => i.delete())
 
 
 
         this.sendStatus('starting decode')
-        this.decodeRecursive(startImage,0,this.numSlices)
+        this.decodeRecursive(startImage, 0, this.numSlices)
 
         preparedBlackImage.delete()
         startImage.delete()
-        this.codedImage.forEach(i=>i.delete())
-        this.codedImageNegative.forEach(i=>i.delete())
+        this.codedImage.forEach(i => i.delete())
+        this.codedImageNegative.forEach(i => i.delete())
 
 
 
@@ -85,22 +80,21 @@ export class PixelMapper
     }
 
     decodeRecursive = (cumuMat, code, depth) => {
-        if (depth===0)
-        {
+        if (depth === 0) {
             //depth counts down, so the last multiplication step was reached
             const index = code //i dont use a fancy coding scheme. TODO add more comments why and how 
             if (index >= 0 && index < this.numPixels)
-                this.detectSinglePixel(cumuMat,index)
-            
+                this.detectSinglePixel(cumuMat, index)
+
         } else {
-            const pos = new cv.Mat(cumuMat.size(),cv.CV_32F)
-            const neg = new cv.Mat(cumuMat.size(),cv.CV_32F)
+            const pos = new cv.Mat(cumuMat.size(), cv.CV_32F)
+            const neg = new cv.Mat(cumuMat.size(), cv.CV_32F)
 
-            cv.multiply(cumuMat, this.codedImage[depth-1], pos)
-            cv.multiply(cumuMat, this.codedImageNegative[depth-1],neg)
+            cv.multiply(cumuMat, this.codedImage[depth - 1], pos)
+            cv.multiply(cumuMat, this.codedImageNegative[depth - 1], neg)
 
-            this.decodeRecursive(neg,code << 1,depth-1)
-            this.decodeRecursive(pos, code << 1 | 1,depth-1)
+            this.decodeRecursive(neg, code << 1, depth - 1)
+            this.decodeRecursive(pos, code << 1 | 1, depth - 1)
 
             pos.delete()
             neg.delete()
@@ -119,7 +113,7 @@ export class PixelMapper
         minRepeatability: 1,
         minArea: 5,
         maxArea: 500,
-        faster:true
+        faster: true
     }
 
     detectSinglePixel = (mat, index) => {
@@ -128,21 +122,21 @@ export class PixelMapper
         //if (index==32)
         //    this.debug(mat,'img32')
 
-        const keypoints = simpleBlobDetector(mat,this.detectParams)
+        const keypoints = simpleBlobDetector(mat, this.detectParams)
 
         const positions = keypoints.map(kp => ({
-            x:kp.pt.x,
-            y:kp.pt.y,
-            size:kp.size,
-            intensity:mat.floatAt(Math.round(kp.pt.y),Math.round(kp.pt.x))
+            x: kp.pt.x,
+            y: kp.pt.y,
+            size: kp.size,
+            intensity: mat.floatAt(Math.round(kp.pt.y), Math.round(kp.pt.x))
         }))
-        positions.sort((a,b)=>b.intensity - a.intensity)
+        positions.sort((a, b) => b.intensity - a.intensity)
         const bestCandidate = positions && positions[0]
 
         const msg = {
             type: 'PIXELRESULT',
             index,
-            isLocated: positions.length>0,
+            isLocated: positions.length > 0,
             position: bestCandidate,
             alternativePositions: positions
         }
@@ -150,25 +144,25 @@ export class PixelMapper
         this.listener(msg)
     }
 
-    debug = (img,msg) => {
+    debug = (img, msg) => {
         this.listener({
             type: 'DEBUGIMG',
             img,
             msg
         })
     }
-    
+
     invertColors = (pos) => {
-        let neg = cv.Mat.ones(pos.size(),cv.CV_32F)
-        cv.subtract(neg,pos,neg)
+        let neg = cv.Mat.ones(pos.size(), cv.CV_32F)
+        cv.subtract(neg, pos, neg)
         return neg;
     }
 
-    prepareImage = (input, blackImage, rescale=false) => {
+    prepareImage = (input, blackImage, rescale = false) => {
         //create our working matrix mat, and load the input image in the correct color space
-        let mat = new cv.Mat(input.size(),cv.CV_32F)
-        input.convertTo(mat,cv.CV_32F)
-        cv.cvtColor(mat,mat,cv.COLOR_RGB2GRAY)
+        let mat = new cv.Mat(input.size(), cv.CV_32F)
+        input.convertTo(mat, cv.CV_32F)
+        cv.cvtColor(mat, mat, cv.COLOR_RGB2GRAY)
 
         mat = this.rescaleSize(mat)
 
@@ -179,24 +173,23 @@ export class PixelMapper
 
         if (this.config.blur > 0)
             //apply blur to be more resistant against noise
-            cv.GaussianBlur(mat,mat,new cv.Size(this.config.blur,this.config.blur),0,0)
+            cv.GaussianBlur(mat, mat, new cv.Size(this.config.blur, this.config.blur), 0, 0)
 
         if (blackImage)
             //subtract the black image (with all pixels off) to filter noise
-            cv.subtract(mat,blackImage,mat)
+            cv.subtract(mat, blackImage, mat)
 
         if (rescale)
             //resize the pixel values from 0-255 to 0-1, so we can multiply multiple images together
-            cv.divide(mat,cv.Mat.ones(mat.size(),cv.CV_32F),mat,1/256)
+            cv.divide(mat, cv.Mat.ones(mat.size(), cv.CV_32F), mat, 1 / 256)
 
-        if (blackImage)
-        {
+        if (blackImage) {
             //increase contrast by gamma boost, because otherwise we will have low values after black is subtracted
-            mat.convertTo(mat,-1,2.2,-0.25)
+            mat.convertTo(mat, -1, 2.2, -0.25)
 
             //constrain new values between 0-1
-            cv.max(mat,cv.Mat.zeros(mat.size(),cv.CV_32F),mat)
-            cv.min(mat,cv.Mat.ones(mat.size(),cv.CV_32F),mat)
+            cv.max(mat, cv.Mat.zeros(mat.size(), cv.CV_32F), mat)
+            cv.min(mat, cv.Mat.ones(mat.size(), cv.CV_32F), mat)
         }
 
         return mat
@@ -211,8 +204,8 @@ export class PixelMapper
         const width = this.config.imgWidth
         const height = Math.round(inputsize.height * (this.config.imgWidth / inputsize.width))
 
-        let output = new cv.Mat(height,width,cv.CV_32F)
-        cv.resize(input,output,output.size())
+        let output = new cv.Mat(height, width, cv.CV_32F)
+        cv.resize(input, output, output.size())
         input.delete()
         return output;
     }

@@ -163,10 +163,10 @@ export default function simpleBlobDetector(image, params) {
     params = { ...defaultParams, ...params };
 
     const grayScaleImage = new cv.Mat(image.rows, image.cols, cv.CV_8UC1);
-    
+
     //changed here
     if (image.type() === cv.CV_32FC1) {
-        image.convertTo(grayScaleImage,cv.CV_8UC1,255);
+        image.convertTo(grayScaleImage, cv.CV_8UC1, 255);
     } else {
         cv.cvtColor(image, grayScaleImage, cv.COLOR_RGB2GRAY);
     }

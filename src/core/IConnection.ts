@@ -1,17 +1,15 @@
-
 export enum States {
-    Connecting='Connecting',
-    Connected='Connected',
-    Disconnected='Disconnected',
+    Connecting = 'Connecting',
+    Connected = 'Connected',
+    Disconnected = 'Disconnected',
 }
 
-export type StateListener = (state:States)=>void
+export type StateListener = (state: States) => void
 
-export interface IConnection 
-{
+export interface IConnection {
     getState(): States
-    sendData(values:boolean[]): Promise<void>
+    sendData(values: boolean[]): Promise<void>
 
-    addStateListener(cb:StateListener):void
-    removeStateListener(cb:StateListener):void
+    addStateListener(cb: StateListener): void
+    removeStateListener(cb: StateListener): void
 }

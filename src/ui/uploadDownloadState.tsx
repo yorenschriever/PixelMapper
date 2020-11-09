@@ -1,16 +1,14 @@
 import React, { useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import { store } from '..'
-import { loadCaptureState, loadDevicesState, loadNavigationState, State } from '../reducers'
-import { loadProcessState } from '../reducers/process'
+import { loadCaptureState, loadDevicesState, loadNavigationState, State } from '../redux'
+import { loadProcessState } from '../redux/process'
 
 export const DownloadStateButton = () => {
 
-    const downloadState=()=>{
+    const downloadState = () => {
         window.open(URL.createObjectURL(
-            new Blob([JSON.stringify(store.getState())], {
-              type: 'application/binary'}
-            )
+            new Blob([JSON.stringify(store.getState())], {type: 'application/binary'})
         ))
     }
 
@@ -19,9 +17,9 @@ export const DownloadStateButton = () => {
 
 export const UploadStateButton = () => {
     const dispatch = useDispatch()
-    const input = useRef<HTMLInputElement|null>(null)
+    const input = useRef<HTMLInputElement | null>(null)
 
-    const uploadState=()=>{
+    const uploadState = () => {
         var reader = new FileReader();
         reader.onload = function (e) {
 
@@ -39,10 +37,10 @@ export const UploadStateButton = () => {
         }
         reader.readAsText(input.current!.files![0]);
     }
-    
+
     return <>
-        <input type="file" ref={input} onChange={uploadState} style={{display:"none"}}/>
-        <button onClick={()=>input.current!.click()}>Load state</button>
+        <input type="file" ref={input} onChange={uploadState} style={{ display: "none" }} />
+        <button onClick={() => input.current!.click()}>Load state</button>
     </>
 }
 
