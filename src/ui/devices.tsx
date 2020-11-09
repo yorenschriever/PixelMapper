@@ -4,8 +4,7 @@ import { connectionFactory } from "../core/connectionFactory"
 import { States } from "../core/IConnection"
 import { Device } from "../entities"
 import { ActiveStep, addDevice, removeDevice, setStep, State, updateHostname, updatePixelCount } from "../reducers"
-import { BurgerMenu } from "./burgerMenu"
-import { UploadStateButton } from "./uploadDownloadState"
+import {  UploadStateButton } from "./uploadDownloadState"
 
 const DevicePanel = ({device,index}:{device:Device,index:number}) => {
 
@@ -89,9 +88,10 @@ export const Devices = () => {
         <br/><br/>
 
         <button onClick={()=>dispatch(setStep(ActiveStep.Capture))}>Capture</button>
-        <button onClick={()=>dispatch(setStep(ActiveStep.LoadTestset))}>Load testset</button>
 
-        <UploadStateButton>Load state</UploadStateButton>
+        <br/><br/>
+
+        <UploadStateButton/>
     </div>
 }
 
@@ -131,11 +131,6 @@ export const CertificateChip = ({state, device}:CertificateChipProps) => {
         return null
 
     return <span style={{ padding:"3px"}}>
-        <a href={`https://${device.hostname}`} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none"}}>🔑</a>
+        <a href={`https://${device.hostname}`} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none"}}><span role="img" aria-label="accept certificate">🔑</span></a>
     </span>
 }
-
-{/* <span>{editing ? "editing hostname" : state}</span>
-{state === States.Disconnected && <span>
-    
-</span>} */}

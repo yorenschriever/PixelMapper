@@ -9,23 +9,35 @@ export const setStep = (step:ActiveStep):SetStepType => ({
     step
 })
 
+export type LoadNavigationStateType = {
+    type: 'LOAD_NAVIGATION_STATE'
+    state: NavigationState
+}
+
+export const loadNavigationState = (state:NavigationState):LoadNavigationStateType => ({
+    type: 'LOAD_NAVIGATION_STATE',
+    state
+})
+
 export const navigationReducer = (state : NavigationState = initialState, action : NavigationActionTypes) => {
     switch (action.type) {
         case 'SET_STEP':
             console.log('navigate to ',action.step)
             return { ...state, step:action.step}
+        case 'LOAD_NAVIGATION_STATE':
+            return action.state
         default:
             return state
     }
 }
 
-export type NavigationActionTypes = SetStepType
+export type NavigationActionTypes = SetStepType | LoadNavigationStateType
 
 
 export enum ActiveStep
 {
     Devices='Devices',
-    LoadTestset='LoadTestset',
+    //LoadTestset='LoadTestset',
     Capture='Capture',
     Process='Process',
     Review='Review',

@@ -44,7 +44,6 @@ export const Review = () => {
                 pixel.position && drawPosition(context, pixel.position, pixel.index.toString(), DrawPixelType.Normal)
             })
             
-            //pixels[activePixel].alternativePositions.forEach((pos,index) => drawPosition(context,pos,String.fromCharCode(index+65),DrawPixelType.Alternative))
             getAlternatives(pixels[activePixel]).forEach(alt => drawPosition(context,alt.position,alt.label,DrawPixelType.Alternative))
 
             if (pixels[activePixel].position)

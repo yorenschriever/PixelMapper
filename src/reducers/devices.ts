@@ -53,6 +53,16 @@ export const updateHostname = (index:number, hostname:string):UpdateHostnameType
     index, hostname
 })
 
+export type LoadDevicesStateType = {
+    type: 'LOAD_DEVICES_STATE'
+    state:DevicesState
+}
+
+export const loadDevicesState = (state:DevicesState):LoadDevicesStateType => ({
+    type: 'LOAD_DEVICES_STATE',
+    state
+})
+
 export const devicesReducer = (state : DevicesState = initialState, action : DevicesActionTypes) => {
     switch (action.type) {
         case 'ADD_DEVICE':
@@ -72,12 +82,14 @@ export const devicesReducer = (state : DevicesState = initialState, action : Dev
             const newdevices4 = [...state.devices]
             newdevices4[action.index] = {...state.devices[action.index],hostname:action.hostname}
             return { ...state, devices: newdevices4}
+        case 'LOAD_DEVICES_STATE':
+            return action.state
         default:
             return state
     }
 }
 
-export type DevicesActionTypes = AddDeviceType | UpdateDeviceType | RemoveDeviceType | UpdatePixelCountType | UpdateHostnameType
+export type DevicesActionTypes = AddDeviceType | UpdateDeviceType | RemoveDeviceType | UpdatePixelCountType | UpdateHostnameType | LoadDevicesStateType
 
 
 export type DevicesState = {
@@ -88,7 +100,7 @@ const initialState : DevicesState =
 {
     devices: [
         {
-            hostname:"192.168.1.105", //"pixelmapper.local",//"Hyperion.local",
+            hostname:"192.168.1.101", //"pixelmapper.local",//"Hyperion.local",
             port: 9601,
             pixelCount:50,
         }

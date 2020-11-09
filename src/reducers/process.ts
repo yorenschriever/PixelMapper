@@ -34,13 +34,13 @@ export const setPreview = (preview:CompressedImage):SetPreviewType => ({
     preview
 })
 
-export type LoadStateType = {
-    type: 'LOAD_STATE'
+export type LoadProcessStateType = {
+    type: 'LOAD_PROCESS_STATE'
     state:ProcessState
 }
 
-export const loadState = (state:ProcessState):LoadStateType => ({
-    type: 'LOAD_STATE',
+export const loadProcessState = (state:ProcessState):LoadProcessStateType => ({
+    type: 'LOAD_PROCESS_STATE',
     state
 })
 
@@ -89,7 +89,7 @@ export const processReducer = (state : ProcessState = initialState, action : Pro
             return { ...state, pixels: new Array<Pixel>(action.pixelCount) }
         case 'SET_PREVIEW':
             return { ...state, preview:action.preview }
-        case 'LOAD_STATE':
+        case 'LOAD_PROCESS_STATE':
             return action.state
         case 'SOLVED_PIXEL':
             let newPixels = [...state.pixels]
@@ -113,7 +113,7 @@ export const processReducer = (state : ProcessState = initialState, action : Pro
     }
 }
 
-export type ProcessActionTypes = ClearPixelsType | SolvedPixelType | SetPreviewType | LoadStateType | ChangePositionType | InterpolateType | InterpolateAllType | DeleteLowConfidenceType
+export type ProcessActionTypes = ClearPixelsType | SolvedPixelType | SetPreviewType | LoadProcessStateType | ChangePositionType | InterpolateType | InterpolateAllType | DeleteLowConfidenceType
 
 
 export type ProcessState = {

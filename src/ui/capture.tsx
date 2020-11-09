@@ -3,11 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { connectionFactory } from "../core/connectionFactory";
 import { DevicesController } from "../core/devicesController";
 import { States } from "../core/IConnection";
-import { Device } from "../entities";
+import { CompressedImage, Device } from "../entities";
 import { ActiveStep, addImages, setStep, State } from "../reducers";
 import { setPreview } from "../reducers/process";
-import { BurgerMenu } from "./burgerMenu";
-import { videoToCompressedImage, videoToImageData } from "./imageUtils";
+import { videoToCompressedImage } from "./imageUtils";
 
 export const Capture = () => {
     const dispatch = useDispatch()
@@ -17,7 +16,6 @@ export const Capture = () => {
     const devices = useSelector<State, Device[]>(state => state.devicesReducer.devices)
     const numSlices = useSelector<State, number>(state => Math.ceil(Math.log(state.devicesReducer.devices.map(d => d.pixelCount).reduce((a, b) => a + b)) / Math.log(2)))
     
-
     //todo cleanup all this ready stuff
     const [capturing, setCapturing] = useState(false)
     const [cameraReady, setCameraReady] = useState(!!track.current)
@@ -78,7 +76,7 @@ export const Capture = () => {
     const controller = useRef(new DevicesController(devices))
 
     const captureImage = () => {
-        return videoToImageData(video.current!,imagedimension.current!.w,imagedimension.current!.h)
+        return videoToCompressedImage(video.current!,imagedimension.current!.w,imagedimension.current!.h) 
     }
 
     const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -103,7 +101,7 @@ export const Capture = () => {
         console.log("Taking black image")
         const black = await captureImage()
 
-        const slices: ImageData[] = []
+        const slices: CompressedImage[] = []
         for (let i = 0; i < numSlices; i++) {
             await controller.current.sendSlice(i)
             await sleep(2 * 150)

@@ -1,44 +1,48 @@
-import React, { ReactNode, useRef } from 'react'
+import React, { useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import { store } from '..'
-import { Pixel } from '../entities'
-import { ActiveStep, setStep } from '../reducers'
-import { loadState, ProcessState } from '../reducers/process'
+import { loadCaptureState, loadDevicesState, loadNavigationState, State } from '../reducers'
+import { loadProcessState } from '../reducers/process'
 
-export const DownloadStateButton = ({children}:{children:ReactNode}) => {
+export const DownloadStateButton = () => {
 
     const downloadState=()=>{
         window.open(URL.createObjectURL(
-            new Blob([JSON.stringify(store.getState().processReducer)], {
+            new Blob([JSON.stringify(store.getState())], {
               type: 'application/binary'}
             )
         ))
     }
 
-    return <button onClick={downloadState}>{children}</button>
+    return <button onClick={downloadState}>Save state</button>
 }
 
-export const UploadStateButton = ({children}:{children:ReactNode}) => {
-    const dispatch=  useDispatch()
+export const UploadStateButton = () => {
+    const dispatch = useDispatch()
     const input = useRef<HTMLInputElement|null>(null)
 
     const uploadState=()=>{
         var reader = new FileReader();
         reader.onload = function (e) {
 
-            const state = JSON.parse(e.target!.result!.toString()) as ProcessState
+            const state = JSON.parse(e.target!.result!.toString()) as State
 
-            //test code to load 20x the data
-            //state.pixels = Array<Pixel[]>(20).fill(state.pixels).flat().map((p,i)=> ({   ...p,index:i,code:i}))
+            //test code to load 20x the data for render stresstesting
+            //state.processReducer.pixels = Array<Pixel[]>(20).fill(state.processReducer.pixels).flat().map((p,i)=> ({   ...p,index:i,code:i}))
 
-            dispatch(loadState(state))
-            dispatch(setStep(ActiveStep.Review))
+            dispatch(loadProcessState(state.processReducer))
+            dispatch(loadCaptureState(state.captureReducer))
+            dispatch(loadDevicesState(state.devicesReducer))
+            dispatch(loadNavigationState(state.navigationReducer))
+
+            //dispatch(setStep(ActiveStep.Process))
         }
         reader.readAsText(input.current!.files![0]);
     }
     
     return <>
         <input type="file" ref={input} onChange={uploadState} style={{display:"none"}}/>
-        <button onClick={()=>input.current!.click()}>{children}</button>
+        <button onClick={()=>input.current!.click()}>Load state</button>
     </>
 }
+

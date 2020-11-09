@@ -1,5 +1,4 @@
 import React from 'react';
-import { LoadTest } from './ui/loadTest';
 import { useSelector } from "react-redux"
 import { ActiveStep, State } from './reducers';
 import { Process } from './ui/process';
@@ -19,8 +18,6 @@ function App() {
             return <Devices />
         case ActiveStep.Capture:
             return <Capture />
-        case ActiveStep.LoadTestset:
-            return <LoadTest />
         case ActiveStep.Process:
             return <Process />
         case ActiveStep.Review:

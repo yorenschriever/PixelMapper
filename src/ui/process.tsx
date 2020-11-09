@@ -5,8 +5,7 @@ import PixelMapperWorker from "worker-loader!../pixelMapper.worker.js"
 import { CompressedImage, Pixel,Position } from "../entities"
 import { ActiveStep, CaptureState, setStep, State } from "../reducers"
 import { clearPixels, solvedPixel } from "../reducers/process"
-import { BurgerMenu } from "./burgerMenu"
-import { compressedImageToCanvas, drawPosition, DrawPixelType } from "./imageUtils"
+import { compressedImageToCanvas, drawPosition, DrawPixelType, compressedImageToImageData } from "./imageUtils"
 
 export const Process = () => {
     const dispatch = useDispatch()
@@ -22,7 +21,7 @@ export const Process = () => {
     const capture = useSelector<State, CaptureState>(state => state.captureReducer)
     const numPixels = useSelector<State, number>(state => state.devicesReducer.devices.map(d => d.pixelCount).reduce((a, b) => a + b))
     
-    const test = useCallback(() => {
+    const attachWorker = useCallback(async () => {
         worker.current!.onerror = (err) => {
             console.log('error', err)
             setError(JSON.stringify({ message: err.message }))
@@ -51,7 +50,6 @@ export const Process = () => {
                 const pixel:Pixel = {
                     index:event.data.index,
                     code:event.data.index,
-                    //isLocated:event.data.isLocated,
                     position: positionMapper(event.data.position),
                     alternativePositions:event.data.alternativePositions.map(positionMapper)
                 }
@@ -74,9 +72,9 @@ export const Process = () => {
 
         const msg = {
             type: 'RUN',
-            whiteImage: capture.whiteImage,
-            blackImage: capture.blackImage,
-            sliceImages: capture.images,
+            whiteImage: await compressedImageToImageData(capture.whiteImage!),
+            blackImage: await compressedImageToImageData(capture.blackImage!),
+            sliceImages: await Promise.all(capture.images.map(i=>compressedImageToImageData(i))),
             numPixels
         }
 
@@ -87,12 +85,12 @@ export const Process = () => {
     useEffect(() => {
         worker.current = new PixelMapperWorker();
         let wrk = worker.current;
-        test()
+        attachWorker()
         return () => {
             console.log('worker terminate')
             wrk.terminate();
         }
-    },[test])
+    },[attachWorker])
 
     return <>
         <canvas ref={canvas} style={{ 
@@ -104,10 +102,13 @@ export const Process = () => {
             transform: "translate(-50%, -50%)"
         }} />
         <canvas id="canvas2" style={{ maxWidth:"100vw", maxHeight:"100vh", border: "1px solid blue", display:"none" }} />
-        {status}
+        
+        <div style={{
+            position:"absolute",
+            color:"#fff"
+        }}>{status}
         {error}
         {debug}
-        {/* <DownloadStateButton>Download</DownloadStateButton> */}
-        {/* <BurgerMenu/> */}
+        </div>
     </>
 }

@@ -18,9 +18,9 @@ export const reducers = combineReducers({
 export type ActionTypes = CaptureActionTypes | DevicesActionTypes | NavigationActionTypes | ProcessActionTypes
 
 export type State = {
-    captureReducer: CaptureState
-    devicesReducer: DevicesState
     navigationReducer: NavigationState
+    devicesReducer: DevicesState
     processReducer: ProcessState
+    captureReducer: CaptureState
 }
 

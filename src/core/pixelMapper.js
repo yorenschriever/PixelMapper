@@ -125,8 +125,8 @@ export class PixelMapper
     detectSinglePixel = (mat, index) => {
 
 
-        if (index==32)
-            this.debug(mat,'img32')
+        //if (index==32)
+        //    this.debug(mat,'img32')
 
         const keypoints = simpleBlobDetector(mat,this.detectParams)
 

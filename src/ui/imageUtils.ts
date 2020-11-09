@@ -9,6 +9,28 @@ export const canvasToCompressedImage = (canvas:HTMLCanvasElement):CompressedImag
     }
 }
 
+export const filenameToCompressedImage = (filename:string): Promise<CompressedImage> => {
+    return new Promise(acc => {
+
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d')!;
+        var img = new Image();
+
+        img.onload = function(){
+            canvas.width = img.width;
+            canvas.height = img.height
+            ctx.drawImage(img, 0, 0, img.width, img.height)
+            acc({
+                width:canvas.width,
+                height:canvas.height,
+                data:canvas.toDataURL("image/png")
+            })
+        }
+
+        img.src = filename;
+    })
+}
+
 export const compressedImageToCanvas =  (image:CompressedImage, canvas:HTMLCanvasElement) : Promise<void> => {
     return new Promise(acc => {
 
@@ -20,6 +42,28 @@ export const compressedImageToCanvas =  (image:CompressedImage, canvas:HTMLCanva
             canvas.height = image.height
             ctx.drawImage(img, 0, 0, image.width, image.height)
             acc()
+        }
+      
+        img.width = image.width;
+        img.height = image.height;
+        img.src = image.data;
+
+    })
+}
+
+export const compressedImageToImageData =  (image:CompressedImage) : Promise<ImageData> => {
+    return new Promise(acc => {
+
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d')!;
+        var img = new Image();
+
+        img.onload = function(){
+            canvas.width = image.width;
+            canvas.height = image.height
+            ctx.drawImage(img, 0, 0, image.width, image.height)
+            const imageData = ctx.getImageData(0, 0, img.width, img.height)
+            acc(imageData)
         }
       
         img.width = image.width;
@@ -55,19 +99,6 @@ export const videoToCompressedImage = (video:HTMLVideoElement,w:number,h:number)
         data:canvas.toDataURL("image/png")
     }
 }
-
-
-// compressedImageToMat = (image:CompressedImage): => {
-
-// }
-
-// matToCompressedImage = () => {
-
-// }
-
-// export const drawPixelToCanvas = (index:number,pixels:Pixel[],canvas:HTMLCanvasElement) => {
-
-// }
 
 const drawCircle = (context: CanvasRenderingContext2D, position:Position, type:DrawPixelType) => {
     context.beginPath();
