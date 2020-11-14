@@ -73,7 +73,7 @@ export const Process = () => {
     }, [dispatch, numPixels, previewImage, capture.whiteImage, capture.blackImage, capture.images])
 
     useEffect(() => {
-        worker.current = new Worker('../pixelMapper.worker.js', {type:'module'})
+        worker.current = new Worker('../worker/pixelMapper.worker.js', {type:'module'})
         let wrk = worker.current;
         attachWorker()
         return () => {

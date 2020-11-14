@@ -1,32 +1,34 @@
 const WorkerPlugin = require('worker-plugin')
-const webpack = require('webpack')
+
+const opencvregex = /opencv\.js$/
+const excludeOpenCV = (rules) => {
+
+    rules.forEach(rule => {
+        if (rule.oneOf)
+            excludeOpenCV(rule.oneOf)
+
+        if (rule.test && rule.test.test && rule.test.test("opencv.js"))
+        {
+            if (rule.exclude===undefined)
+                rule.exclude = opencvregex
+            else if (Array.isArray(rule.exclude)) 
+                rule.exclude.push(opencvregex)
+            else
+                rule.exclude = [rule.exclude, opencvregex]
+        }
+    })
+}
 
 module.exports = function override(config, env) {
 
     config.plugins.push(new WorkerPlugin)
 
-    const opencvregex = /opencv\.js$/
-
-    config.module.rules.filter(i=>i.test && i.test.test("opencv.js")).forEach(loader => loader.exclude = opencvregex)
-
-    config.module.rules[2].oneOf.filter(i=>i.test && i.test.test && i.test.test("opencv.js")).forEach(loader => {
-        if (loader.exclude===undefined)
-            loader.exclude = opencvregex
-        else if (Array.isArray(loader.exclude)) 
-            loader.exclude.push(opencvregex)
-        else
-            loader.exclude = [loader.exclude, opencvregex]
-    })
-
-    //config.mode='development'
-    //config.optimization.minimize=false
+    //exclude opencv from the loader. this slows down things a lot
+    excludeOpenCV(config.module.rules)
+    
+    //ForkTsCheckerWebpackPlugin is slowing things down
     if (config.mode='production')
         config.plugins = config.plugins.filter(i=>i.constructor.name !== "ForkTsCheckerWebpackPlugin") 
-
-
-    //console.log(config)
-
-    //throw Error('')
 
     return config
 }
