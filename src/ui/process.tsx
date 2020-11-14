@@ -4,6 +4,7 @@ import { CompressedImage, Pixel, Position } from "../entities"
 import { ActiveStep, CaptureState, setStep, State } from "../redux"
 import { clearPixels, solvedPixel } from "../redux/process"
 import { compressedImageToCanvas, drawPosition, DrawPixelType, compressedImageToImageData, imageDataTocanvas } from "../imageUtils"
+import { BurgerMenu } from "./burgerMenu"
 
 export const Process = () => {
     const dispatch = useDispatch()
@@ -91,5 +92,7 @@ export const Process = () => {
             {error}
             {debug}
         </div>
+
+        <BurgerMenu/>
     </>
 }

@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Pixelmapper",
+  "name": "Pixelmapper",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,14 +8,14 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "logo200.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "200x200"
     },
     {
-      "src": "logo512.png",
+      "src": "logo400.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "400x400"
     }
   ],
   "start_url": ".",
@@ -24,7 +24,6 @@
   "background_color": "#000000",
 
 
-    "display":      "fullscreen",
-    "orientation":  "landscape" 
+  "display":      "standalone"
 
 }
