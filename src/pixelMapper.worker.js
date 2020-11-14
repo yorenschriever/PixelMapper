@@ -1,6 +1,6 @@
+/* eslint-disable */
 import { PixelMapper } from "./core/pixelMapper";
-
-importScripts("../../opencv.js")
+import cv from "./core/opencv"
 
 const listener = (body) => {
     if (body.img) {

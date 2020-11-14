@@ -1,4 +1,5 @@
 import simpleBlobDetector from "./simpleBlobDetector"
+import cv from "./opencv"
 
 export class PixelMapper {
     codedImage = []

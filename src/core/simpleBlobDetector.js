@@ -5,6 +5,8 @@
 // But with special `faster` option which has slightly different semantics,
 // but is a whole bunch faster.
 
+import cv from "./opencv"
+
 function diff(v1, v2) {
     if (v1.x !== undefined) return { x: v1.x - v2.x, y: v1.y - v2.y };
     return v1.map((value, index) => value - v2[index]);

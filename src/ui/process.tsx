@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import PixelMapperWorker from "worker-loader!../pixelMapper.worker.js"
 import { CompressedImage, Pixel, Position } from "../entities"
 import { ActiveStep, CaptureState, setStep, State } from "../redux"
 import { clearPixels, solvedPixel } from "../redux/process"
@@ -10,7 +8,7 @@ import { compressedImageToCanvas, drawPosition, DrawPixelType, compressedImageTo
 export const Process = () => {
     const dispatch = useDispatch()
 
-    const worker = useRef<PixelMapperWorker>()
+    const worker = useRef<Worker>()
     const canvas = useRef<HTMLCanvasElement | null>(null)
     const debugCanvas = useRef<HTMLCanvasElement | null>(null)
 
@@ -75,12 +73,12 @@ export const Process = () => {
     }, [dispatch, numPixels, previewImage, capture.whiteImage, capture.blackImage, capture.images])
 
     useEffect(() => {
-        worker.current = new PixelMapperWorker();
+        worker.current = new Worker('../pixelMapper.worker.js', {type:'module'})
         let wrk = worker.current;
         attachWorker()
         return () => {
             console.log('worker terminate')
-            wrk.terminate();
+            wrk?.terminate();
         }
     }, [attachWorker])
 
