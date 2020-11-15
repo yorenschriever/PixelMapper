@@ -2,13 +2,13 @@
 import { Pixel, Position } from "../entities"
 import { CompressedImage } from "../entities/compressedImage"
 
-export type ClearPixelsType = {
-    type: 'CLEAR_PIXELS'
+export type InitPixelsType = {
+    type: 'INIT_PIXELS'
     pixelCount: number
 }
 
-export const clearPixels = (pixelCount: number):ClearPixelsType => ({
-    type: 'CLEAR_PIXELS',
+export const initPixels = (pixelCount: number):InitPixelsType => ({
+    type: 'INIT_PIXELS',
     pixelCount
 })
 
@@ -85,7 +85,7 @@ export const deleteLowConfidence = (threshold:number):DeleteLowConfidenceType =>
 
 export const processReducer = (state : ProcessState = initialState, action : ProcessActionTypes) => {
     switch (action.type) {
-        case 'CLEAR_PIXELS':
+        case 'INIT_PIXELS':
             return { ...state, pixels: new Array<Pixel>(action.pixelCount) }
         case 'SET_PREVIEW':
             return { ...state, preview:action.preview }
@@ -113,7 +113,7 @@ export const processReducer = (state : ProcessState = initialState, action : Pro
     }
 }
 
-export type ProcessActionTypes = ClearPixelsType | SolvedPixelType | SetPreviewType | LoadProcessStateType | ChangePositionType | InterpolateType | InterpolateAllType | DeleteLowConfidenceType
+export type ProcessActionTypes = InitPixelsType | SolvedPixelType | SetPreviewType | LoadProcessStateType | ChangePositionType | InterpolateType | InterpolateAllType | DeleteLowConfidenceType
 
 
 export type ProcessState = {

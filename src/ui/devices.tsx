@@ -31,6 +31,7 @@ const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
             <div>
                 <ConnectionChip state={state} dirty={editing} />
                 {!editing && <CertificateChip state={state} device={device} />}
+                {state === States.Disconnected && <a style={{ textDecoration: "none", marginLeft: "10px" }} onClick={() => connectionFactory.getConnection(device, true)}><span role="img" aria-label="retry">↻</span></a>}
             </div>
 
             <div>Remove</div>

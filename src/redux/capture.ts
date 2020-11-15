@@ -1,4 +1,5 @@
 import { CompressedImage } from "../entities/compressedImage"
+import { EncoderType } from "../encoders/encoderFactory"
 
 export type AddImagesType = {
     type: 'ADD_IMAGES'
@@ -47,6 +48,7 @@ export type CaptureState = {
     blackImage?: CompressedImage
     whiteImage?: CompressedImage
     images: CompressedImage[]
+    encoderType: string
 }
 
 const initialState: CaptureState =
@@ -54,4 +56,5 @@ const initialState: CaptureState =
     blackImage: undefined,
     whiteImage: undefined,
     images: [],
+    encoderType: EncoderType.Balanced
 }

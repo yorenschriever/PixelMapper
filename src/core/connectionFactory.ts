@@ -8,10 +8,10 @@ class ConnectionFactory {
 
     connections: { [key: string]: IConnection; } = {};
 
-    getConnection(device: Device) {
+    getConnection(device: Device, forceNew?: boolean) {
         const hash = deviceHash(device)
 
-        if (!this.connections[hash])
+        if (!this.connections[hash] || forceNew)
             this.connections[hash] = this.createConnection(device)
 
         return this.connections[hash]

@@ -5,6 +5,7 @@ import { DevicesController } from "../core/devicesController";
 import { States } from "../core/IConnection";
 import { Device } from "../entities";
 import { State } from "../redux";
+import { IEncoder } from "../encoders/IEncoder"
 
 export const useDevices = () => {
     const devices = useSelector<State, Device[]>(state => state.devicesReducer.devices)
@@ -27,7 +28,7 @@ export const useDevices = () => {
     })
 
     const setAllLeds = (status: boolean) => controller.current.setAll(status)
-    const sendSlice = (index: number) => controller.current.sendSlice(index)
+    const sendSlice = (index: number, encoder: IEncoder) => controller.current.sendSlice(index, encoder)
 
     return {
         connectionReady,

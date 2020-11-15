@@ -1,12 +1,16 @@
 import useSwitch from '@react-hook/switch'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Pixel, CompressedImage } from '../entities'
-import { State } from '../redux'
+import { CaptureState, State } from '../redux'
 import { changePosition, deleteLowConfidence, interpolate, interpolateAll } from '../redux/process'
 import { BurgerMenu } from './burgerMenu'
 import { ExportButton } from './exportButton'
-import { compressedImageToCanvas, connectPositions, DrawPixelType, drawPosition } from '../imageUtils'
+import { compressedImageToCanvas, connectPositions, DrawPixelType, drawPosition, imageDataTocanvas } from '../imageUtils'
+import { useWorker } from "../worker/useWorker"
+import { createRunMessage } from '../utils'
+import { EncoderType } from '../encoders/encoderFactory'
+import { encoderTypeSelector, numPixelsSelector } from '../redux/selectors'
 
 const getAlternatives = (pixel: Pixel) => pixel.alternativePositions.slice(0, 5).map((pos, index) => ({
     label: String.fromCharCode(index + 65),
@@ -16,10 +20,48 @@ const getAlternatives = (pixel: Pixel) => pixel.alternativePositions.slice(0, 5)
 export const Review = () => {
     const dispatch = useDispatch()
     const canvas = useRef<HTMLCanvasElement | null>(null)
+    const debugCanvas = useRef<HTMLCanvasElement | null>(null)
     const pixels = useSelector<State, Pixel[]>(state => state.processReducer.pixels)
     const previewImage = useSelector<State, CompressedImage>(state => state.processReducer.preview!)
     const [activePixel, setActivePixel] = useState<number>(0)
     const [waitManualPlacement, setWaitManualPlacement] = useState<number | undefined>(undefined)
+    const [showingDebugimg, setShowingDebugImg] = useSwitch(false);
+    const worker = useWorker();
+    const numPixels = useSelector<State, number>(numPixelsSelector)
+    const encoderType = useSelector<State, EncoderType>(encoderTypeSelector)
+    const captureState = useSelector<State, CaptureState>(i => i.captureReducer)
+
+    const workerMessageHandler = useCallback(async (event: MessageEvent<any>) => {
+        switch (event.data.type) {
+            case "RECALCULATEIMG":
+                imageDataTocanvas(event.data.img, debugCanvas.current!)
+                const context = debugCanvas.current!.getContext('2d')!
+                getAlternatives(pixels[event.data.index]).forEach(alt => drawPosition(context, alt.position, alt.label, DrawPixelType.Alternative))
+                setShowingDebugImg.on()
+                break;
+            case "ISINITIALIZEDRESPONSE":
+                console.log('isinit response', event.data)
+                if (!event.data.initialized) {
+                    const runmsg = await createRunMessage(captureState, numPixels, encoderType, 'INITONLY')
+                    worker.postMessage(runmsg)
+                }
+                break;
+            default:
+        }
+    }, [pixels, setShowingDebugImg, worker, captureState, numPixels, encoderType])
+
+    useEffect(() => {
+        worker.onerror = (err) => console.log('error', err)
+        worker.onmessage = workerMessageHandler
+        worker.postMessage({ type: 'ISINITIALIZEDREQUEST' })
+
+        return () => {
+            worker.onerror = null
+            worker.onmessage = null
+            //worker.postMessage({type:"CLEAN"})
+            //worker.terminate();
+        }
+    }, [worker, workerMessageHandler])
 
     useEffect(() => {
         compressedImageToCanvas(previewImage, canvas.current!).then(() => {
@@ -40,7 +82,7 @@ export const Review = () => {
             }
 
             pixels.forEach(pixel => {
-                pixel.position && drawPosition(context, pixel.position, pixel.index.toString(), DrawPixelType.Normal)
+                pixel.position && drawPosition(context, pixel.position, pixel.index.toString(), pixel.position.confidence > 0.5 ? DrawPixelType.Normal : DrawPixelType.LowConfidence)
             })
 
             getAlternatives(pixels[activePixel]).forEach(alt => drawPosition(context, alt.position, alt.label, DrawPixelType.Alternative))
@@ -68,8 +110,17 @@ export const Review = () => {
         setWaitManualPlacement(undefined)
     }
 
+    const logStats = () => {
+        console.log('# not found', pixels.filter(i => i.position === undefined).length)
+        console.log('total confidence', pixels.map(i => i.position?.confidence || 0).reduce((a, b) => a + b, 0))
+    }
+
+    useEffect(logStats, [])
+
     return <>
         <canvas ref={canvas} className="processCanvas" onClick={handleCanvasClick} />
+        <canvas ref={debugCanvas} className="processCanvas" style={{ display: showingDebugimg ? "block" : "none" }} onClick={setShowingDebugImg.off} />
+
         <PixelCarousel pixels={pixels} activePixel={activePixel} setActivePixel={setActivePixel} setWaitManualPlacement={setWaitManualPlacement} show={waitManualPlacement === undefined} />
 
         <BurgerMenu>
@@ -77,6 +128,7 @@ export const Review = () => {
 
             <button onClick={() => dispatch(deleteLowConfidence(0.5))}>delete &lt; 50%</button>
             <button onClick={() => dispatch(deleteLowConfidence(0.25))}>delete &lt; 25%</button>
+            <button onClick={() => dispatch(deleteLowConfidence(0.125))}>delete &lt; 12.5%</button>
 
             <ExportButton normalize={true}>Export CSV</ExportButton>
         </BurgerMenu>
@@ -183,6 +235,7 @@ type PositionMenuProps = {
 
 const PositionMenu = ({ pixel, setWaitManualPlacement, closeMenu, x }: PositionMenuProps) => {
     const dispatch = useDispatch()
+    const worker = useWorker();
 
     return (
         <div className="positionMenu" style={{ left: x }}>
@@ -193,6 +246,8 @@ const PositionMenu = ({ pixel, setWaitManualPlacement, closeMenu, x }: PositionM
             <button onClick={() => { setWaitManualPlacement(pixel.index); closeMenu() }}>Manual placement</button>
 
             {!pixel.position && <button onClick={() => dispatch(interpolate(pixel.index))}>Interpolate</button>}
+
+            <button onClick={() => worker.postMessage({ type: "RECALCULATE", code: pixel.code, index: pixel.index })}>Show calculated</button>
 
             <button onClick={closeMenu}>Close menu</button>
         </div>

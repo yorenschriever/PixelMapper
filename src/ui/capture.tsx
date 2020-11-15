@@ -1,14 +1,19 @@
-import React, { } from "react"
+import React, { useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux";
 import { CompressedImage } from "../entities";
 import { ActiveStep, addImages, setStep, State } from "../redux";
 import { setPreview } from "../redux/process";
 import { useVideo, useDevices } from "../hooks";
+import { numPixelsSelector, encoderTypeSelector } from "../redux/selectors"
+import { encoderFactory } from "../encoders/encoderFactory"
 
 export const Capture = () => {
     const dispatch = useDispatch()
 
-    const numSlices = useSelector<State, number>(state => Math.ceil(Math.log(state.devicesReducer.devices.map(d => d.pixelCount).reduce((a, b) => a + b)) / Math.log(2)))
+    const numPixels = useSelector<State, number>(numPixelsSelector)
+    const encoderType = useSelector(encoderTypeSelector)
+    const encoder = useMemo(() => encoderFactory(encoderType, numPixels), [encoderType, numPixels])
+    const numSlices = encoder.GetCodeLength()
 
     const { setCapturing, setExposure, captureImage, videoRef, cameraReady, capturing } = useVideo()
     const { connectionReady, setAllLeds, sendSlice } = useDevices()
@@ -31,13 +36,13 @@ export const Capture = () => {
 
         console.log("Taking black image")
         await setAllLeds(false)
-        await sleep(2 * 150)
+        await sleep(3 * 150)
         const black = captureImage()
 
         const slices: CompressedImage[] = []
         for (let i = 0; i < numSlices; i++) {
-            await sendSlice(i)
-            await sleep(2 * 150)
+            await sendSlice(i, encoder)
+            await sleep(3 * 150)
             slices.push(captureImage())
         }
 

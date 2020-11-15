@@ -1,9 +1,12 @@
 import simpleBlobDetector from "./simpleBlobDetector"
 import cv from "./opencv"
-
+import { encoderFactory } from "../encoders/encoderFactory"
 export class PixelMapper {
     codedImage = []
     codedImageNegative = []
+    startImage
+    encoder
+    initialized = false
 
     numSlices = 0
     numPixels = 0
@@ -22,29 +25,37 @@ export class PixelMapper {
 
     constructor(listener) {
         this.listener = listener
-        console.log('test constructor')
+        console.log('pixelmapper constructor')
     }
 
-    run = (whiteImage, blackImage, sliceImages, numPixels) => {
+    init = (whiteImage, blackImage, sliceImages, numPixels, encoderType) => {
+        this.initialized = true
+
+        console.log('initializing mapper', { numPixels, encoderType })
         this.sendStatus('initializing')
+
+        this.encoder = encoderFactory(encoderType, numPixels)
 
         this.numPixels = numPixels
         this.numSlices = sliceImages.length
 
+        if (this.numSlices !== this.encoder.GetCodeLength())
+            throw Error('number of images does not match encoder code length')
+
         let preparedBlackImage = undefined;
         if (blackImage) {
             this.sendStatus('preparing black image')
-            preparedBlackImage = this.prepareImage(blackImage, undefined, false)
+            preparedBlackImage = this.prepareImage(blackImage, undefined, undefined, false)
         }
 
         this.sendStatus('preparing start image')
-        let startImage = this.prepareImage(whiteImage, preparedBlackImage, true)
+        this.startImage = this.prepareImage(whiteImage, preparedBlackImage, undefined, true)
 
         this.sendStatus('processing slice images')
         this.codedImage = []
         this.codedImageNegative = []
         sliceImages.forEach(image => {
-            const prepared = this.prepareImage(image, preparedBlackImage, true)
+            const prepared = this.prepareImage(image, preparedBlackImage, this.startimage, true)
             this.codedImage.push(prepared)
             this.codedImageNegative.push(this.invertColors(prepared))
         })
@@ -54,22 +65,24 @@ export class PixelMapper {
         blackImage.delete()
         whiteImage.delete()
         sliceImages.forEach(i => i.delete())
-
-
-
-        this.sendStatus('starting decode')
-        this.decodeRecursive(startImage, 0, this.numSlices)
-
         preparedBlackImage.delete()
-        startImage.delete()
-        this.codedImage.forEach(i => i.delete())
-        this.codedImageNegative.forEach(i => i.delete())
 
+    }
 
+    run = () => {
+        this.sendStatus('starting decode')
+        this.decodeRecursive(this.startImage, 0, this.numSlices)
 
         this.listener({
             type: 'DONE',
         })
+    }
+
+    clean = () => {
+        this.startImage.delete()
+        this.codedImage.forEach(i => i.delete())
+        this.codedImageNegative.forEach(i => i.delete())
+        this.initialized = false;
     }
 
     sendStatus = (msg) => {
@@ -83,9 +96,9 @@ export class PixelMapper {
     decodeRecursive = (cumuMat, code, depth) => {
         if (depth === 0) {
             //depth counts down, so the last multiplication step was reached
-            const index = code //i dont use a fancy coding scheme. TODO add more comments why and how 
-            if (index >= 0 && index < this.numPixels)
-                this.detectSinglePixel(cumuMat, index)
+            const index = this.encoder.Decode(code)
+            if (index !== undefined && index >= 0 && index < this.numPixels)
+                this.detectSinglePixel(cumuMat, index, code)
 
         } else {
             const pos = new cv.Mat(cumuMat.size(), cv.CV_32F)
@@ -94,8 +107,14 @@ export class PixelMapper {
             cv.multiply(cumuMat, this.codedImage[depth - 1], pos)
             cv.multiply(cumuMat, this.codedImageNegative[depth - 1], neg)
 
-            this.decodeRecursive(neg, code << 1, depth - 1)
-            this.decodeRecursive(pos, code << 1 | 1, depth - 1)
+            //We know the highest code we are looking for, and this recursive
+            //mechanism work in such a way that it solves  all 
+            //codes from low to high. If we are already past the highest code 
+            //we dont have to look further
+            if (code << 1 <= this.encoder.GetHighestCode()) {
+                this.decodeRecursive(neg, code << 1, depth - 1)
+                this.decodeRecursive(pos, code << 1 | 1, depth - 1)
+            }
 
             pos.delete()
             neg.delete()
@@ -106,22 +125,22 @@ export class PixelMapper {
         thresholdStep: 64,
         minThreshold: 64,
         maxThreshold: 255,
-        minDistBetweenBlobs: 25,
+        minDistBetweenBlobs: 10,
         filterByColor: false,
         filterByArea: false,
         filterByInertia: false,
         filterByConvexity: false,
         minRepeatability: 1,
-        minArea: 5,
+        minArea: 2,
         maxArea: 500,
         faster: true
     }
 
-    detectSinglePixel = (mat, index) => {
+    detectSinglePixel = (mat, index, code) => {
 
-
-        //if (index==32)
-        //    this.debug(mat,'img32')
+        const maxBrightness = cv.minMaxLoc(mat).maxVal
+        //use converTo te rescale the result to a 0-1 range
+        mat.convertTo(mat, cv.CV_32FC1, 1.0 / maxBrightness);
 
         const keypoints = simpleBlobDetector(mat, this.detectParams)
 
@@ -129,7 +148,7 @@ export class PixelMapper {
             x: kp.pt.x,
             y: kp.pt.y,
             size: kp.size,
-            intensity: mat.floatAt(Math.round(kp.pt.y), Math.round(kp.pt.x))
+            intensity: mat.floatAt(Math.round(kp.pt.y), Math.round(kp.pt.x)) * maxBrightness
         }))
         positions.sort((a, b) => b.intensity - a.intensity)
         const bestCandidate = positions && positions[0]
@@ -137,12 +156,37 @@ export class PixelMapper {
         const msg = {
             type: 'PIXELRESULT',
             index,
+            code,
             isLocated: positions.length > 0,
             position: bestCandidate,
             alternativePositions: positions
         }
 
         this.listener(msg)
+    }
+
+    recalculate = (code, index) => {
+        const cumuMat = this.startImage.clone()
+        for (let i = 0; i < this.numSlices; i++) {
+            const sliceValue = (code >> i) & 1;
+            if (sliceValue)
+                cv.multiply(cumuMat, this.codedImage[i], cumuMat)
+            else
+                cv.multiply(cumuMat, this.codedImageNegative[i], cumuMat)
+        }
+
+        const maxBrightness = cv.minMaxLoc(cumuMat).maxVal
+        //use convertTo te rescale the result to a 0-1 range
+        cumuMat.convertTo(cumuMat, cv.CV_32FC1, 1.0 / maxBrightness);
+
+        this.listener({
+            type: 'RECALCULATEIMG',
+            img: cumuMat,
+            code,
+            index
+        })
+
+        cumuMat.delete();
     }
 
     debug = (img, msg) => {
@@ -159,7 +203,7 @@ export class PixelMapper {
         return neg;
     }
 
-    prepareImage = (input, blackImage, rescale = false) => {
+    prepareImage = (input, blackImage, startImage, rescale = false) => {
         //create our working matrix mat, and load the input image in the correct color space
         let mat = new cv.Mat(input.size(), cv.CV_32F)
         input.convertTo(mat, cv.CV_32F)
@@ -182,7 +226,13 @@ export class PixelMapper {
 
         if (rescale)
             //resize the pixel values from 0-255 to 0-1, so we can multiply multiple images together
+            //if (startImage==undefined)
             cv.divide(mat, cv.Mat.ones(mat.size(), cv.CV_32F), mat, 1 / 256)
+        //else
+        //we divide the coded images by the white image, so all pixels are now individually scaled
+        //in on a range 0-1 where 0 is the blackimage value and 1 the whiteimage value.
+        //this helps when pixels are partly hidden or facing the other way
+        //    cv.divide(mat, startImage, mat, 1 / 256)
 
         if (blackImage) {
             //increase contrast by gamma boost, because otherwise we will have low values after black is subtracted

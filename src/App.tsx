@@ -8,9 +8,9 @@ import { Review } from './ui/review';
 
 function App() {
     const step = useSelector<State, ActiveStep>(state => state.navigationReducer.step)
-    const state = useSelector<State, State>(s => s)
-
-    console.log({ state })
+    
+    //const state = useSelector<State, State>(s => s)
+    //console.log({ state })
 
     switch (step) {
         case ActiveStep.Devices:

@@ -5,7 +5,7 @@ import cv from "./opencv"
 const listener = (body) => {
     if (body.img) {
         body.img = imageDataFromMat(body.img)
-        console.log('transformed img data', body)
+        //console.log('transformed img data', body)
     }
 
     postMessage(body)
@@ -17,11 +17,31 @@ addEventListener("message", event => {
     const body = event.data
     switch (body.type) {
         case "RUN":
-            pixelMapper.run(
+            pixelMapper.init(
                 cv.matFromImageData(body.whiteImage),
                 cv.matFromImageData(body.blackImage),
                 body.sliceImages.map(image => cv.matFromImageData(image)),
-                body.numPixels
+                body.numPixels,
+                body.encoderType
+            )
+            pixelMapper.run()
+            break;
+        case "RECALCULATE":
+            pixelMapper.recalculate(body.code, body.index)
+            break;
+        case "CLEAN":
+            pixelMapper.clean()
+            break;
+        case "ISINITIALIZEDREQUEST":
+            postMessage({ type: 'ISINITIALIZEDRESPONSE', initialized: pixelMapper.initialized })
+            break;
+        case "INITONLY":
+            pixelMapper.init(
+                cv.matFromImageData(body.whiteImage),
+                cv.matFromImageData(body.blackImage),
+                body.sliceImages.map(image => cv.matFromImageData(image)),
+                body.numPixels,
+                body.encoderType
             )
             break;
         default:

@@ -111,9 +111,9 @@ export const videoToCompressedImage = (video: HTMLVideoElement, w: number, h: nu
 const drawCircle = (context: CanvasRenderingContext2D, position: Position, type: DrawPixelType) => {
     context.beginPath();
     context.arc(position.x, position.y, 15, 0, 2 * Math.PI, false);
-    context.lineWidth = [2, 6, 2, 2][type];
+    context.lineWidth = [2, 6, 2, 2, 2][type];
     context.setLineDash([]);
-    context.strokeStyle = ['#00ff00', '#ffaa00', '#0000ff', '#ff0000'][type];
+    context.strokeStyle = ['#00ff00', '#00ffff', '#0000ff', '#ff0000', '#ffaa00'][type];
     context.stroke();
 }
 
@@ -121,7 +121,8 @@ export enum DrawPixelType {
     Normal,
     Highlight,
     Alternative,
-    Missing
+    Missing,
+    LowConfidence
 }
 
 export const drawPosition = (context: CanvasRenderingContext2D, position: Position, label: string, type: DrawPixelType) => {
@@ -144,7 +145,7 @@ export const drawPosition = (context: CanvasRenderingContext2D, position: Positi
 }
 
 export const connectPositions = (context: CanvasRenderingContext2D, position1: Position, position2: Position, type: DrawPixelType) => {
-    context.strokeStyle = ['green', 'green', 'blue', 'red'][type];
+    context.strokeStyle = ['green', 'green', 'blue', 'red', 'green'][type];
     context.lineWidth = [2, 2, 2, 4][type];
     context.setLineDash([[], [], [], [15, 5]][type]);
     context.beginPath();
@@ -152,13 +153,3 @@ export const connectPositions = (context: CanvasRenderingContext2D, position1: P
     context.lineTo(position2.x, position2.y);
     context.stroke();
 }
-
-// export const connectPixelGap = (context: CanvasRenderingContext2D, pixel1:Pixel,pixel2:Pixel) =>{
-//     context.strokeStyle = 'red';
-//     context.lineWidth = 4;
-//     context.setLineDash([15, 5]);
-//     context.beginPath();
-//     context.moveTo(pixel1.position!.x, pixel1.position!.y);
-//     context.lineTo(pixel2.position!.x, pixel2.position!.y);
-//     context.stroke();
-// }
