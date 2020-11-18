@@ -61,10 +61,10 @@ void setup() {
   Serial.print("Connected. IP=");
   Serial.println(WiFi.localIP());
 
-  WiFi.softAP("Mapper","mapper123");
-  IPAddress IP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(IP);
+//  WiFi.softAP("Mapper","mapper123");
+//  IPAddress IP = WiFi.softAPIP();
+//  Serial.print("AP IP address: ");
+//  Serial.println(IP);
 
   // For every resource available on the server, we need to create a ResourceNode
   // The ResourceNode links URL and HTTP method to a handler function

@@ -19,6 +19,7 @@ const getAlternatives = (pixel: Pixel) => pixel.alternativePositions.slice(0, 5)
 
 export const Review = () => {
     const dispatch = useDispatch()
+    const [error, setError] = useState<string>("")
     const canvas = useRef<HTMLCanvasElement | null>(null)
     const debugCanvas = useRef<HTMLCanvasElement | null>(null)
     const pixels = useSelector<State, Pixel[]>(state => state.processReducer.pixels)
@@ -40,7 +41,6 @@ export const Review = () => {
                 setShowingDebugImg.on()
                 break;
             case "ISINITIALIZEDRESPONSE":
-                console.log('isinit response', event.data)
                 if (!event.data.initialized) {
                     const runmsg = await createRunMessage(captureState, numPixels, encoderType, 'INITONLY')
                     worker.postMessage(runmsg)
@@ -51,7 +51,10 @@ export const Review = () => {
     }, [pixels, setShowingDebugImg, worker, captureState, numPixels, encoderType])
 
     useEffect(() => {
-        worker.onerror = (err) => console.log('error', err)
+        worker.onerror = (err) => { 
+            console.log('error', err)
+            setError(JSON.stringify({ error: err.message }))
+        }
         worker.onmessage = workerMessageHandler
         worker.postMessage({ type: 'ISINITIALIZEDREQUEST' })
 
@@ -120,6 +123,10 @@ export const Review = () => {
     return <>
         <canvas ref={canvas} className="processCanvas" onClick={handleCanvasClick} />
         <canvas ref={debugCanvas} className="processCanvas" style={{ display: showingDebugimg ? "block" : "none" }} onClick={setShowingDebugImg.off} />
+
+        <div className="processStatus">
+            {error}
+        </div>
 
         <PixelCarousel pixels={pixels} activePixel={activePixel} setActivePixel={setActivePixel} setWaitManualPlacement={setWaitManualPlacement} show={waitManualPlacement === undefined} />
 
