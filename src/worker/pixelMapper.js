@@ -151,7 +151,13 @@ export class PixelMapper {
             intensity: mat.floatAt(Math.round(kp.pt.y), Math.round(kp.pt.x)) * maxBrightness
         }))
         positions.sort((a, b) => b.intensity - a.intensity)
-        const bestCandidate = positions && positions[0]
+
+        //images with fewer matches turn out to be higher quality. increate the confidence a bit
+        if (positions.length <= 3) positions.forEach(i=>i.intensity = Math.min(1, i.intensity*2));
+        //images with one 1 match are likely a valid match, but at low intensity lighting. increase the confidence again
+        if (positions.length == 1) positions.forEach(i=>i.intensity = Math.min(1, i.intensity*2));
+
+        const bestCandidate = positions && positions[0].intensity >= 0.01 && positions[0]
 
         const msg = {
             type: 'PIXELRESULT',

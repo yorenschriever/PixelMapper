@@ -85,7 +85,7 @@ export const Review = () => {
             }
 
             pixels.forEach(pixel => {
-                pixel.position && drawPosition(context, pixel.position, pixel.index.toString(), pixel.position.confidence > 0.5 ? DrawPixelType.Normal : DrawPixelType.LowConfidence)
+                pixel.position && drawPosition(context, pixel.position, pixel.index.toString(), pixel.position.confidence > 0.1 ? DrawPixelType.Normal : DrawPixelType.LowConfidence)
             })
 
             getAlternatives(pixels[activePixel]).forEach(alt => drawPosition(context, alt.position, alt.label, DrawPixelType.Alternative))
@@ -135,7 +135,8 @@ export const Review = () => {
 
             <button onClick={() => dispatch(deleteLowConfidence(0.5))}>delete &lt; 50%</button>
             <button onClick={() => dispatch(deleteLowConfidence(0.25))}>delete &lt; 25%</button>
-            <button onClick={() => dispatch(deleteLowConfidence(0.125))}>delete &lt; 12.5%</button>
+            <button onClick={() => dispatch(deleteLowConfidence(0.1))}>delete &lt; 10%</button>
+            <button onClick={() => dispatch(deleteLowConfidence(0.05))}>delete &lt; 5%</button>
 
             <ExportButton normalize={true}>Export CSV</ExportButton>
         </BurgerMenu>
@@ -206,7 +207,7 @@ const PixelPanel = ({ pixel, activePixel, setActivePixel, ref2, setPositionMenuO
 
     let className = "pixelPanel"
     if (!pixel.position) className += " red"
-    else if (pixel.position?.confidence < 0.5) className += " orange"
+    else if (pixel.position?.confidence < 0.1) className += " orange"
     if (pixel.index === activePixel) className += " active"
 
     const handleMouseOver = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

@@ -50,7 +50,7 @@ export const Process = () => {
                 console.log('pixel result', pixel)
                 dispatch(solvedPixel(pixel))
                 if (pixel.position)
-                    drawPosition(canvas.current!.getContext('2d')!, pixel.position, pixel.index.toString(), pixel.position.confidence > 0.5 ? DrawPixelType.Normal : DrawPixelType.LowConfidence)
+                    drawPosition(canvas.current!.getContext('2d')!, pixel.position, pixel.index.toString(), pixel.position.confidence > 0.1 ? DrawPixelType.Normal : DrawPixelType.LowConfidence)
                 break;
             case "STATUS":
                 setStatus(event.data.msg)
