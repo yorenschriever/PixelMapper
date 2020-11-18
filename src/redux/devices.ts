@@ -65,6 +65,16 @@ export const loadDevicesState = (state: DevicesState): LoadDevicesStateType => (
     state
 })
 
+export type SetNameType = {
+    type: 'SET_NAME'
+    name: string
+}
+
+export const setName = (name: string): SetNameType => ({
+    type: 'SET_NAME',
+    name
+})
+
 export const devicesReducer = (state: DevicesState = initialState, action: DevicesActionTypes) => {
     switch (action.type) {
         case 'ADD_DEVICE':
@@ -86,26 +96,30 @@ export const devicesReducer = (state: DevicesState = initialState, action: Devic
             return { ...state, devices: newdevices4 }
         case 'LOAD_DEVICES_STATE':
             return action.state
+        case 'SET_NAME':
+            return { ...state, name:action.name }
         default:
             return state
     }
 }
 
-export type DevicesActionTypes = AddDeviceType | UpdateDeviceType | RemoveDeviceType | UpdatePixelCountType | UpdateHostnameType | LoadDevicesStateType
+export type DevicesActionTypes = AddDeviceType | UpdateDeviceType | RemoveDeviceType | UpdatePixelCountType | UpdateHostnameType | LoadDevicesStateType | SetNameType
 
 
 export type DevicesState = {
     devices: Device[]
+    name: string;
 }
 
 const initialState: DevicesState =
 {
     devices: [
         {
-            hostname: "192.168.1.101",
+            hostname: "192.168.1.106",
             port: 9601,
             pixelCount: 50,
         }
-    ]
+    ],
+    name: "pixelmapper"
 }
 

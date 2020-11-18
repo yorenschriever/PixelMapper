@@ -2,12 +2,13 @@ import React, { ReactNode } from 'react'
 import { useSelector } from 'react-redux'
 import { CompressedImage, Device, Pixel, Position } from '../entities'
 import { State } from '../redux'
+import { nameSelector } from '../redux/selectors'
 
 export const ExportButton = ({ children, normalize }: { children: ReactNode, normalize?: boolean }) => {
     const devices = useSelector<State, Device[]>(state => state.devicesReducer.devices)
     const pixels = useSelector<State, Pixel[]>(state => state.processReducer.pixels)
     const previewImage = useSelector<State, CompressedImage>(state => state.processReducer.preview!)
-
+    const name = useSelector(nameSelector)
     const positionToString = (pos: Position) => `${pos.x},${pos.y}`
 
     const transformPosition = (pos?: Position): Position => {
@@ -23,7 +24,6 @@ export const ExportButton = ({ children, normalize }: { children: ReactNode, nor
     }
 
     const exportCSV = () => {
-
         let result = devices.map((device, index) => {
             const pixelStart = devices.slice(0, index).map(d => d.pixelCount).reduce((a, b) => a + b, 0);
             const pixelsInDevice = pixels.slice(pixelStart, pixelStart + device.pixelCount)
@@ -39,7 +39,7 @@ export const ExportButton = ({ children, normalize }: { children: ReactNode, nor
             }
             )
         )
-        downloadLink.download = "pixels.csv";
+        downloadLink.download = `${name}.csv`;
 
         document.body.appendChild(downloadLink);
         downloadLink.click();

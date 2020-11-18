@@ -1,15 +1,28 @@
 import React, { useRef } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { store } from '..'
 import { loadCaptureState, loadDevicesState, loadNavigationState, State } from '../redux'
 import { loadProcessState } from '../redux/process'
+import { nameSelector } from '../redux/selectors'
 
 export const DownloadStateButton = () => {
+    const name = useSelector<State,string>(nameSelector)
 
     const downloadState = () => {
-        window.open(URL.createObjectURL(
-            new Blob([JSON.stringify(store.getState())], {type: 'application/binary'})
-        ))
+        const result = JSON.stringify(store.getState())
+
+        var downloadLink = document.createElement("a");
+        downloadLink.href = URL.createObjectURL(
+            new Blob([result], {
+                type: 'application/binary'
+            }
+            )
+        )
+        downloadLink.download = `${name}.json`;
+
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
     }
 
     return <button onClick={downloadState}>Save state</button>

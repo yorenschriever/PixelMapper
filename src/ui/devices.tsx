@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from "react-redux"
 import { connectionFactory } from "../core/connectionFactory"
 import { States } from "../core/IConnection"
 import { Device } from "../entities"
-import { ActiveStep, addDefaultDevice, removeDevice, setStep, State, updateHostname, updatePixelCount } from "../redux"
+import { ActiveStep, addDefaultDevice, removeDevice, setName, setStep, State, updateHostname, updatePixelCount } from "../redux"
+import { nameSelector } from "../redux/selectors"
 import { UploadStateButton } from "./uploadDownloadState"
 
 const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
@@ -44,6 +45,7 @@ const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
 export const Devices = () => {
     const dispatch = useDispatch();
     const devices = useSelector<State, Device[]>(state => state.devicesReducer.devices)
+    const name = useSelector<State, string>(state => state.devicesReducer.name)
 
     const flashState = useRef(false);
     useEffect(() => {
@@ -62,6 +64,11 @@ export const Devices = () => {
     })
 
     return <div className="devices">
+        <div className="deviceSettingsPanel">
+            <div>Capture name</div>
+            <input value={name} onChange={event => dispatch(setName(event.currentTarget.value))}/>
+        </div>
+
         {devices.map((device, index) => <DevicePanel key={index} device={device} index={index} />)}
 
         <button onClick={() => dispatch(addDefaultDevice())}>Add device</button>

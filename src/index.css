@@ -156,3 +156,11 @@ button {
   grid-template-rows: 40px 40px 40px 40px;
   align-items: center;
 }
+
+.deviceSettingsPanel {
+  padding-bottom: 20px;
+  display:grid;
+  grid-template-columns:40%  60%;
+  grid-template-rows: 40px;
+  align-items: center;
+}
