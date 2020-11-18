@@ -16,8 +16,8 @@ export const ExportButton = ({ children, normalize }: { children: ReactNode, nor
 
         const scale = Math.max(previewImage.width, previewImage.height) / 2
         return {
-            x: pos.x / scale - 1,
-            y: pos.y / scale - 1,
+            x: (pos.x - previewImage.width / 2) / scale,
+            y: (pos.y - previewImage.height / 2) / scale,
             confidence: pos.confidence
         }
     }
@@ -28,7 +28,7 @@ export const ExportButton = ({ children, normalize }: { children: ReactNode, nor
             const pixelStart = devices.slice(0, index).map(d => d.pixelCount).reduce((a, b) => a + b, 0);
             const pixelsInDevice = pixels.slice(pixelStart, pixelStart + device.pixelCount)
 
-            return `device=${device.hostname}:${device.port}\n` +
+            return `host=${device.hostname}:${device.port}\n` +
                 pixelsInDevice.map(pixel => positionToString(transformPosition(pixel.position))).join("\n")
         }).join("\n")
 
