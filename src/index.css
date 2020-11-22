@@ -164,3 +164,18 @@ button {
   grid-template-rows: 40px;
   align-items: center;
 }
+
+.cropPoint {
+  border-radius: 50%;
+  width:30px;
+  height:30px;
+  position: absolute;
+  background-color: red;
+  transform: translate(-50%, -50%);
+}
+
+.cropCanvas {
+  position: absolute;
+  width: 100%;
+  height:100%;
+}

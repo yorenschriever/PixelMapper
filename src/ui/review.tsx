@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Pixel, CompressedImage } from '../entities'
 import { CaptureState, State } from '../redux'
-import { changePosition, deleteLowConfidence, interpolate, interpolateAll } from '../redux/process'
+import { changePosition, CropType, deleteLowConfidence, interpolate, interpolateAll, setCrop } from '../redux/process'
 import { BurgerMenu } from './burgerMenu'
 import { ExportButton } from './exportButton'
 import { compressedImageToCanvas, connectPositions, DrawPixelType, drawPosition, imageDataTocanvas } from '../imageUtils'
@@ -11,6 +11,7 @@ import { useWorker } from "../worker/useWorker"
 import { createRunMessage } from '../utils'
 import { EncoderType } from '../encoders/encoderFactory'
 import { encoderTypeSelector, numPixelsSelector } from '../redux/selectors'
+import { Crop } from './crop'
 
 const getAlternatives = (pixel: Pixel) => pixel.alternativePositions.slice(0, 5).map((pos, index) => ({
     label: String.fromCharCode(index + 65),
@@ -31,6 +32,7 @@ export const Review = () => {
     const numPixels = useSelector<State, number>(numPixelsSelector)
     const encoderType = useSelector<State, EncoderType>(encoderTypeSelector)
     const captureState = useSelector<State, CaptureState>(i => i.captureReducer)
+    const crop = useSelector<State, CropType | undefined>(i => i.processReducer.crop)
 
     const workerMessageHandler = useCallback(async (event: MessageEvent<any>) => {
         switch (event.data.type) {
@@ -51,7 +53,7 @@ export const Review = () => {
     }, [pixels, setShowingDebugImg, worker, captureState, numPixels, encoderType])
 
     useEffect(() => {
-        worker.onerror = (err) => { 
+        worker.onerror = (err) => {
             console.log('error', err)
             setError(JSON.stringify({ error: err.message }))
         }
@@ -66,36 +68,61 @@ export const Review = () => {
         }
     }, [worker, workerMessageHandler])
 
+    const [baseImage, setBaseImage] = useState<ImageData | null>(null);
+    const drawBaseImage = useCallback(async () => {
+        if (baseImage) {
+            imageDataTocanvas(baseImage, canvas.current!)
+            return;
+        }
+
+        await compressedImageToCanvas(previewImage, canvas.current!)
+
+        const context = canvas.current!.getContext('2d')!
+
+        const unknownEndpoint = { x: 0, y: 0, confidence: 0 }
+        let lastPosition = pixels[0].position || unknownEndpoint
+        for (let i = 1; i < pixels.length; i++) {
+            let skipped = false
+            while (i < pixels.length && !pixels[i].position) { i++; skipped = true }
+
+            const reachedUnlocatedEnd = i === pixels.length && skipped
+            const newPosition = reachedUnlocatedEnd ? unknownEndpoint : pixels[i].position!
+
+            connectPositions(context, lastPosition, newPosition, skipped ? DrawPixelType.Missing : DrawPixelType.Normal)
+
+            lastPosition = newPosition
+        }
+
+        pixels.forEach(pixel => {
+            pixel.position && drawPosition(context, pixel.position, pixel.index.toString(), pixel.position.confidence > 0.1 ? DrawPixelType.Normal : DrawPixelType.LowConfidence)
+        })
+
+        setBaseImage(context.getImageData(0, 0, canvas.current!.width, canvas.current!.height));
+
+    }, [baseImage, pixels, previewImage])
+
     useEffect(() => {
-        compressedImageToCanvas(previewImage, canvas.current!).then(() => {
+        drawBaseImage().then(() => {
             const context = canvas.current!.getContext('2d')!
-
-            const unknownEndpoint = { x: 0, y: 0, confidence: 0 }
-            let lastPosition = pixels[0].position || unknownEndpoint
-            for (let i = 1; i < pixels.length; i++) {
-                let skipped = false
-                while (i < pixels.length && !pixels[i].position) { i++; skipped = true }
-
-                const reachedUnlocatedEnd = i === pixels.length && skipped
-                const newPosition = reachedUnlocatedEnd ? unknownEndpoint : pixels[i].position!
-
-                connectPositions(context, lastPosition, newPosition, skipped ? DrawPixelType.Missing : DrawPixelType.Normal)
-
-                lastPosition = newPosition
-            }
-
-            pixels.forEach(pixel => {
-                pixel.position && drawPosition(context, pixel.position, pixel.index.toString(), pixel.position.confidence > 0.1 ? DrawPixelType.Normal : DrawPixelType.LowConfidence)
-            })
 
             getAlternatives(pixels[activePixel]).forEach(alt => drawPosition(context, alt.position, alt.label, DrawPixelType.Alternative))
 
             if (pixels[activePixel].position)
                 drawPosition(context, pixels[activePixel].position!, pixels[activePixel].index.toString(), DrawPixelType.Highlight)
 
-
+            if (crop) {
+                context.strokeStyle = 'red'
+                context.lineWidth = 2
+                context.beginPath();
+                context.moveTo(crop.x0, crop.y0);
+                context.lineTo(crop.x0, crop.y1);
+                context.lineTo(crop.x1, crop.y1);
+                context.lineTo(crop.x1, crop.y0);
+                context.lineTo(crop.x0, crop.y0);
+                context.stroke();
+            }
         })
-    }, [pixels, previewImage, activePixel])
+    }, [pixels, activePixel, crop, drawBaseImage])
 
     const handleCanvasClick = (event: any) => {
         //check if we are in manual placement mode
@@ -113,6 +140,13 @@ export const Review = () => {
         setWaitManualPlacement(undefined)
     }
 
+    const calcCrop = useCallback(() => ({
+        x0: pixels.map(i => i.position?.x ?? canvas.current!.width).reduce((a, b) => Math.min(a, b)),
+        y0: pixels.map(i => i.position?.y ?? canvas.current!.height).reduce((a, b) => Math.min(a, b)),
+        x1: pixels.map(i => i.position?.x ?? 0).reduce((a, b) => Math.max(a, b)),
+        y1: pixels.map(i => i.position?.y ?? 0).reduce((a, b) => Math.max(a, b)),
+    }), [pixels])
+
     const logStats = () => {
         console.log('# not found', pixels.filter(i => i.position === undefined).length)
         console.log('total confidence', pixels.map(i => i.position?.confidence || 0).reduce((a, b) => a + b, 0))
@@ -123,6 +157,8 @@ export const Review = () => {
     return <>
         <canvas ref={canvas} className="processCanvas" onClick={handleCanvasClick} />
         <canvas ref={debugCanvas} className="processCanvas" style={{ display: showingDebugimg ? "block" : "none" }} onClick={setShowingDebugImg.off} />
+
+        {crop && !showingDebugimg && <Crop canvas={canvas} baseImage={baseImage} />}
 
         <div className="processStatus">
             {error}
@@ -137,6 +173,11 @@ export const Review = () => {
             <button onClick={() => dispatch(deleteLowConfidence(0.25))}>delete &lt; 25%</button>
             <button onClick={() => dispatch(deleteLowConfidence(0.1))}>delete &lt; 10%</button>
             <button onClick={() => dispatch(deleteLowConfidence(0.05))}>delete &lt; 5%</button>
+
+            {crop ?
+                <button onClick={() => dispatch(setCrop(undefined))}>No crop</button> :
+                <button onClick={() => dispatch(setCrop(calcCrop()))}>Crop</button>
+            }
 
             <ExportButton normalize={true}>Export CSV</ExportButton>
         </BurgerMenu>

@@ -4,7 +4,6 @@ import { connectionFactory } from "../core/connectionFactory"
 import { States } from "../core/IConnection"
 import { Device } from "../entities"
 import { ActiveStep, addDefaultDevice, removeDevice, setName, setStep, State, updateHostname, updatePixelCount } from "../redux"
-import { nameSelector } from "../redux/selectors"
 import { UploadStateButton } from "./uploadDownloadState"
 
 const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
@@ -32,7 +31,7 @@ const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
             <div>
                 <ConnectionChip state={state} dirty={editing} />
                 {!editing && <CertificateChip state={state} device={device} />}
-                {state === States.Disconnected && <a style={{ textDecoration: "none", marginLeft: "10px" }} onClick={() => connectionFactory.getConnection(device, true)}><span role="img" aria-label="retry">↻</span></a>}
+                {state === States.Disconnected && <button style={{ marginLeft: "10px", height: "28px", width: "unset" }} onClick={() => connectionFactory.getConnection(device, true)}><span role="img" aria-label="retry">↻</span></button>}
             </div>
 
             <div>Remove</div>
@@ -45,7 +44,7 @@ const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
 export const Devices = () => {
     const dispatch = useDispatch();
     const devices = useSelector<State, Device[]>(state => state.devicesReducer.devices)
-    const name = useSelector<State, string>(state => state.devicesReducer.name)
+    const name = useSelector<State, string>(state => state.devicesReducer.name || '')
 
     const flashState = useRef(false);
     useEffect(() => {
@@ -66,7 +65,7 @@ export const Devices = () => {
     return <div className="devices">
         <div className="deviceSettingsPanel">
             <div>Capture name</div>
-            <input value={name} onChange={event => dispatch(setName(event.currentTarget.value))}/>
+            <input value={name} onChange={event => dispatch(setName(event.currentTarget.value))} />
         </div>
 
         {devices.map((device, index) => <DevicePanel key={index} device={device} index={index} />)}
