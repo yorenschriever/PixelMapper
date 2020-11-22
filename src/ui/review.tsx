@@ -179,7 +179,8 @@ export const Review = () => {
                 <button onClick={() => dispatch(setCrop(calcCrop()))}>Crop</button>
             }
 
-            <ExportButton normalize={true}>Export CSV</ExportButton>
+            <ExportButton type="csv">Export CSV</ExportButton>
+            <ExportButton type="h">Export .h</ExportButton>
         </BurgerMenu>
     </>
 }
