@@ -69,8 +69,9 @@ export const Review = () => {
     }, [worker, workerMessageHandler])
 
     const [baseImage, setBaseImage] = useState<ImageData | null>(null);
+    const basePixels = useRef<Pixel[]|null>(null);
     const drawBaseImage = useCallback(async () => {
-        if (baseImage) {
+        if (baseImage && basePixels.current === pixels) {
             imageDataTocanvas(baseImage, canvas.current!)
             return;
         }
@@ -98,6 +99,8 @@ export const Review = () => {
         })
 
         setBaseImage(context.getImageData(0, 0, canvas.current!.width, canvas.current!.height));
+        //store the ref to the pixels object we used to render the base image.
+        basePixels.current = pixels;
 
     }, [baseImage, pixels, previewImage])
 
