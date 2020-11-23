@@ -157,7 +157,7 @@ export class PixelMapper {
         //images with one 1 match are likely a valid match, but at low intensity lighting. increase the confidence again
         if (positions.length == 1) positions.forEach(i=>i.intensity = Math.min(1, i.intensity*2));
 
-        const bestCandidate = positions && positions[0].intensity >= 0.01 && positions[0]
+        const bestCandidate = (positions && positions[0] && positions[0].intensity >= 0.01) ? positions[0] : undefined
 
         const msg = {
             type: 'PIXELRESULT',
