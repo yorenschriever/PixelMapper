@@ -35,7 +35,7 @@ const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
             </div>
 
             <div>Remove</div>
-            <button onClick={() => dispatch(removeDevice(index))}>🗑</button>
+            <button onClick={() => dispatch(removeDevice(index))} style={{height: "28px", width: "32px" }}>🗑</button>
 
         </div>
     )
@@ -62,9 +62,10 @@ export const Devices = () => {
         }
     })
 
-    return <div className="devices">
+    return <>
+    <div className="devices">
         <div className="deviceSettingsPanel">
-            <div>Capture name</div>
+            <div>Project name</div>
             <input value={name} onChange={event => dispatch(setName(event.currentTarget.value))} />
         </div>
 
@@ -74,12 +75,17 @@ export const Devices = () => {
 
         <br /><br />
 
-        <button onClick={() => dispatch(setStep(ActiveStep.Capture))}>Capture</button>
+        <button onClick={() => dispatch(setStep(ActiveStep.Capture))}>Capture &gt;&gt;</button>
 
-        <br /><br />
+        <hr/>
 
         <UploadStateButton />
     </div>
+
+    {/* <div className="devices">
+    <UploadStateButton />
+    </div> */}
+    </>
 }
 
 type ConnectionChipProps = {
