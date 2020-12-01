@@ -60,7 +60,7 @@ export class PixelMapper {
             this.codedImageNegative.push(this.invertColors(prepared))
         })
 
-        //this.debug(this.codedImageNegative[0],'neg 0')
+        this.debug(whiteImage,'neg 0')
 
         blackImage.delete()
         whiteImage.delete()

@@ -1,4 +1,7 @@
+let worker: Worker|undefined = undefined;
 
-const worker = new Worker('../worker/pixelMapper.worker.js', { type: 'module' })
-
-export const useWorker = () => worker
+export const useWorker = () => {
+    if (!worker)
+        worker = new Worker('../worker/pixelMapper.worker.js', { type: 'module' })
+    return worker;
+}
