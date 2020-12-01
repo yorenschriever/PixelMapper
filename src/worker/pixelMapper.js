@@ -55,7 +55,7 @@ export class PixelMapper {
         this.codedImage = []
         this.codedImageNegative = []
         sliceImages.forEach(image => {
-            const prepared = this.prepareImage(image, preparedBlackImage, this.startimage, true)
+            const prepared = this.prepareImage(image, preparedBlackImage, this.startImage, true)
             this.codedImage.push(prepared)
             this.codedImageNegative.push(this.invertColors(prepared))
         })
