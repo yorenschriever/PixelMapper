@@ -41,6 +41,7 @@ In the example pictures above I used 800 leds for a tree that is roughly conical
 
 `
 #define WIFI_SSID "YOUR_SSID"
+
 #define WIFI_PSK "YOUR_PASSWORD"
 ` 
 
