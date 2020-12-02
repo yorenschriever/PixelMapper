@@ -39,9 +39,10 @@ In the example pictures above I used 800 leds for a tree that is roughly conical
 
 1. Open the [Arduino sketch](https://github.com/yorenschriever/PixelMapper/tree/master/tools/pixelmapper_esp32_neopixels) from the tool folder. Create a file "password.h", and add your wifi credentials like this:
 
-`#define WIFI_SSID "YOUR_SSID"`
-
-`#define WIFI_PSK "YOUR_PASSWORD"` 
+`
+#define WIFI_SSID "YOUR_SSID"
+#define WIFI_PSK "YOUR_PASSWORD"
+` 
 
 2. Upload the sketch to the ESP32. Afterwards open the serial port so see if it can connect to the network. After it's connected it will print its IP address. 
 
@@ -73,7 +74,7 @@ We can address each led from the ESP32 individually, and say if each one should 
 | Led code | 0 | 1| 2| 3|
 |--|--|--|--|--|
 | Picture 1 | 0 | 0 | 1 | 1 |
-| Picture 2 | 0 | 1 | 0 | 1 |
+| Picture 0 | 0 | 1 | 0 | 1 |
 
   
 
