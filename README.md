@@ -9,11 +9,14 @@ Pixelmapper finds the positions of leds from a series of photos it takes. You ca
 It is basically a website that opens a websocket connection to an ESP32 that is connected to a string of leds. Then, it triggers these leds in a special pattern and takes photos of them. From these photos it can calculate the position of each led. PixelMapper is a browser based application that runs client-side using OpenCV in WebAssembly. This means you can run it on any platform (mobile/desktop), without the need to install anything.
   
 ##  See it in action 
-If you don't want to solder leds or program a microcontroller yet, you can get an  
-impression by loading some example states. You can download one of these files, go to https://yorenschriever.github.io/pixelmapper/ and choose 'load state'. The example states are taken after the capture phase, right before the analysis starts. This is where you continue.
+If you don't want to solder leds or program a microcontroller yet, you can get an impression by loading some example states. You can download one of these files, go to https://yorenschriever.github.io/pixelmapper/ and choose 'load state'. The example states are taken after the capture phase, right before the analysis starts. This is where you continue.
+
 [Pixel strip state](https://github.com/yorenschriever/PixelMapper/blob/master/public/testset/state.json?raw=true) 
+
 [Neopixels strip state](https://github.com/yorenschriever/PixelMapper/blob/master/public/testset/balanced-occluded.json?raw=true)
+
 [Christmas tree state](https://github.com/yorenschriever/PixelMapper/blob/master/public/testset/balanced-tree.json?raw=true)
+
 The first one is an example under optimal conditions: Every led will be solved. The one with the Neopixel strip is more advanced. It contains reflections, leds facing away from the camera, and leds that are covered. The third example is a real world example where a lot of leds are at the back of the tree or behind branches. A lot of leds will not be found. Because the leds are wrapped in a spiral pattern around the tree, interpolation will do a good job approximating their positions.
 
 ![](https://github.com/yorenschriever/PixelMapper/raw/master/public/collage.jpg)
@@ -37,6 +40,7 @@ In the example pictures above I used 800 leds for a tree that is roughly conical
 1. Open the [Arduino sketch](https://github.com/yorenschriever/PixelMapper/tree/master/tools/pixelmapper_esp32_neopixels) from the tool folder. Create a file "password.h", and add your wifi credentials like this:
 
 `#define WIFI_SSID "YOUR_SSID"`
+
 `#define WIFI_PSK "YOUR_PASSWORD"` 
 
 2. Upload the sketch to the ESP32. Afterwards open the serial port so see if it can connect to the network. After it's connected it will print its IP address. 
@@ -58,7 +62,7 @@ It is an old project that I have ported a few times over the years. It started o
 ### Algorithm
 If you are interested in the algorithm, have a look at [pixelMapper.js](https://github.com/yorenschriever/PixelMapper/blob/master/src/worker/pixelMapper.js). This contains all interesting stuff.
 
-Below i will guide you through my thought process to get the the current algorithm. Is starts by splitting up the problem into 2 sub problems:  
+Below I will guide you through my thought process to get the the current algorithm. Is starts by splitting up the problem into 2 sub problems:  
 1.	Where are the leds? (which pixels contain leds, which do not?)  
 2.	Given a led, which one is it?  
   
