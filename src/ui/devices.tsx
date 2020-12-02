@@ -62,8 +62,7 @@ export const Devices = () => {
         }
     })
 
-    return <>
-    <div className="devices">
+    return <div className="devices">
         <div className="deviceSettingsPanel">
             <div>Project name</div>
             <input value={name} onChange={event => dispatch(setName(event.currentTarget.value))} />
@@ -80,12 +79,9 @@ export const Devices = () => {
         <hr/>
 
         <UploadStateButton />
-    </div>
 
-    {/* <div className="devices">
-    <UploadStateButton />
-    </div> */}
-    </>
+        <a href="https://github.com/yorenschriever/PixelMapper" className="sourcelink">Source and documentation</a>
+    </div>
 }
 
 type ConnectionChipProps = {

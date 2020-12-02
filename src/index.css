@@ -189,3 +189,12 @@ hr {
   margin-top:20px;
   margin-bottom:20px;
 }
+
+a.sourcelink {
+  top: 50px;
+  position: relative;
+  color: #888;
+  text-align: center;
+  display: inline-block;
+  width: 100%;
+}

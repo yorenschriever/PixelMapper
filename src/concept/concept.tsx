@@ -68,12 +68,12 @@ export const Concept = () => {
     <span></span>
     <span></span>
     <span>
-        bit 1 = <input value={stateToVal(state0)} onChange={e=>setState0(valToState(e.currentTarget.value.slice(-1)))} style={inputCss}/><br/>
+        code bit 1 = <input value={stateToVal(state0)} onChange={e=>setState0(valToState(e.currentTarget.value.slice(-1)))} style={inputCss}/><br/>
         ({state0?"positive":"negative"})
     </span>
     <span></span>
     <span>
-        bit 0 = <input value={stateToVal(state1)} onChange={e=>setState1(valToState(e.currentTarget.value.slice(-1)))} style={inputCss}/><br/>
+        code bit 0 = <input value={stateToVal(state1)} onChange={e=>setState1(valToState(e.currentTarget.value.slice(-1)))} style={inputCss}/><br/>
         ({state1?"positive":"negative"})
     </span>
     <span></span>
