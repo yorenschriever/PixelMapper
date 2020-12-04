@@ -206,7 +206,6 @@ a.sourcelink {
 
 .supportWarning {
   border: 1px solid red;
-  display: inline-block;
   background-color: #fdd;
   color: black;
   border-radius: 5px;
@@ -216,7 +215,6 @@ a.sourcelink {
 
 .supportSuggestion {
   border: 1px solid green;
-  display: inline-block;
   background-color: #dfd;
   color: black;
   border-radius: 5px;
