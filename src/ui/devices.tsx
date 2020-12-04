@@ -7,6 +7,7 @@ import { Device, DeviceType } from "../entities"
 import { useConnectionState } from "../hooks/useConnectionState"
 import { useFlashLeds } from "../hooks/useFlashLeds"
 import { ActiveStep, addDefaultDevice, addDevice, removeDevice, setName, setStep, State, updateHostname, updatePixelCount } from "../redux"
+import { deviceHash } from "../utils"
 import { UploadStateButton } from "./uploadDownloadState"
 
 const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
@@ -76,7 +77,7 @@ export const Devices = () => {
             <input value={name} onChange={event => dispatch(setName(event.currentTarget.value))} />
         </div>
 
-        {devices.map((device, index) => <DevicePanel key={index} device={device} index={index} />)}
+        {devices.map((device, index) => <DevicePanel key={deviceHash(device)} device={device} index={index} />)}
 
         <div style={{ display: "flex", gap: "10px" }}>
             <button onClick={() => dispatch(addDefaultDevice())}>+ Add websocket device</button>
