@@ -31,6 +31,16 @@ class ConnectionPool {
         const hash = deviceHash(device)
         this.connections[hash] = connection
     }
+
+    removeConnection(device:Device)
+    {
+        const hash = deviceHash(device)
+        if (!this.connections[hash])
+            return
+        
+        this.connections[hash].close()
+        delete this.connections[hash]
+    }
 }
 
 export const connectionPool = new ConnectionPool()

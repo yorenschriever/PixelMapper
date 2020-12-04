@@ -13,8 +13,15 @@ import { UploadStateButton } from "./uploadDownloadState"
 const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
     const dispatch = useDispatch();
     const [hostname, setHostname] = useState(device.hostname)
+    const devices = useSelector<State, Device[]>(state => state.devicesReducer.devices)
     const editing = hostname !== device.hostname
-    const { state, reconnect } = useConnectionState(device);
+    const { state, reconnect } = useConnectionState(device)
+
+    const handleRemove = () => {
+        if (devices.filter(d => deviceHash(d)===deviceHash(device)).length===1)
+            connectionPool.removeConnection(device)
+        dispatch(removeDevice(index))
+    }
 
     return (
         <div className="devicePanel">
@@ -32,7 +39,7 @@ const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
             </div>
 
             <div>Remove</div>
-            <button onClick={() => dispatch(removeDevice(index))} style={{ height: "28px", width: "32px" }}>🗑</button>
+            <button onClick={handleRemove} style={{ height: "28px", width: "32px" }}>🗑</button>
 
         </div>
     )

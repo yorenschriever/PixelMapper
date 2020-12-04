@@ -8,6 +8,7 @@ export class BLEConnection implements IConnection {
     listeners: StateListener[] = []
 
     bledevice?: BluetoothDevice
+    server?: BluetoothRemoteGATTServer
     characteristic?: BluetoothRemoteGATTCharacteristic
 
     constructor(private device?: Device) {
@@ -46,10 +47,10 @@ export class BLEConnection implements IConnection {
         })
 
         console.log('connecting to server')
-        const server = await bledevice.gatt!.connect();
+        this.server = await bledevice.gatt!.connect();
 
         console.log('Getting Service...');
-        const service = await server.getPrimaryService(SERVICE_UUID);
+        const service = await this.server.getPrimaryService(SERVICE_UUID);
 
         console.log('Getting Characteristic...');
         this.characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
@@ -88,6 +89,14 @@ export class BLEConnection implements IConnection {
         } catch (error) {
             console.error('Error sending BLE message', error);
         }
+    }
+
+    close = () => {
+        console.log('closing')
+        this.server?.disconnect()
+        this.characteristic = undefined
+        this.server = undefined
+        this.bledevice = undefined
     }
 
     valuesToBits = (values: boolean[]) => {

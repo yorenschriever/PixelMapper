@@ -46,6 +46,11 @@ export class WebsocketConnection implements IConnection {
         })
     }
 
+    close = () => {
+        this.socket?.close()
+        this.socket = undefined
+    }
+
     addStateListener = (cb: StateListener) => {
         this.listeners.push(cb)
     }
