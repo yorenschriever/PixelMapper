@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { connectionFactory } from "../core/connectionFactory";
+import { connectionPool } from "../core/connectionPool";
 import { DevicesController } from "../core/devicesController";
 import { States } from "../core/IConnection";
 import { Device } from "../entities";
@@ -11,7 +11,7 @@ export const useDevices = () => {
     const devices = useSelector<State, Device[]>(state => state.devicesReducer.devices)
     const controller = useRef(new DevicesController(devices))
 
-    const calcAllConnected = useCallback(() => devices.every(device => connectionFactory.getConnection(device).getState() === States.Connected), [devices])
+    const calcAllConnected = useCallback(() => devices.every(device => connectionPool.getConnection(device).getState() === States.Connected), [devices])
     const [connectionReady, setConnectionReady] = useState(calcAllConnected());
     const handleConnectionStateChange = useCallback(() => {
         const allConnected = calcAllConnected()
@@ -21,9 +21,9 @@ export const useDevices = () => {
     }, [calcAllConnected])
 
     useEffect(() => {
-        devices.forEach(device => connectionFactory.getConnection(device).addStateListener(handleConnectionStateChange))
+        devices.forEach(device => connectionPool.getConnection(device).addStateListener(handleConnectionStateChange))
         return () => {
-            devices.forEach(device => connectionFactory.getConnection(device).removeStateListener(handleConnectionStateChange))
+            devices.forEach(device => connectionPool.getConnection(device).removeStateListener(handleConnectionStateChange))
         }
     })
 

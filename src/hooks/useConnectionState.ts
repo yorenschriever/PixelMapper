@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { connectionFactory } from "../core/connectionFactory";
+import { connectionPool } from "../core/connectionPool";
 import { States } from "../core/IConnection";
 import { Device } from "../entities/device";
 
 export const useConnectionState = (device: Device) => {
-    const connection = connectionFactory.getConnection(device)
+    const connection = connectionPool.getConnection(device)
     const [state, setState] = useState<States>(connection.getState())
     
     useEffect(() => {
@@ -15,7 +15,7 @@ export const useConnectionState = (device: Device) => {
 
     const reconnect = () => {
         connection.removeStateListener(setState);
-        connectionFactory.getConnection(device, true).addStateListener(setState);
+        connectionPool.getConnection(device, true).addStateListener(setState);
     }
 
     return {state, reconnect}

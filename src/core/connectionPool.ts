@@ -4,8 +4,7 @@ import { BLEConnection } from "./bleConnection";
 import { IConnection } from "./IConnection"
 import { WebsocketConnection } from "./websocketConnection";
 
-
-class ConnectionFactory {
+class ConnectionPool {
 
     connections: { [key: string]: IConnection; } = {};
 
@@ -34,4 +33,4 @@ class ConnectionFactory {
     }
 }
 
-export const connectionFactory = new ConnectionFactory()
+export const connectionPool = new ConnectionPool()

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import { connectionFactory } from "../core/connectionFactory";
+import { connectionPool } from "../core/connectionPool";
 import { States } from "../core/IConnection";
 import { Device } from "../entities";
 import { State } from "../redux";
@@ -13,7 +13,7 @@ export const useFlashLeds = () => {
         const interval = setInterval(() => {
             flashState.current = !flashState.current
             devices.forEach(device => {
-                const conn = connectionFactory.getConnection(device)
+                const conn = connectionPool.getConnection(device)
                 if (conn.getState() !== States.Connected)
                     return
                 conn.sendData(new Array(device.pixelCount).fill(flashState.current))

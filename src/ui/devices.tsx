@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { BLEConnection } from "../core/bleConnection"
-import { connectionFactory } from "../core/connectionFactory"
+import { connectionPool } from "../core/connectionPool"
 import { States } from "../core/IConnection"
 import { Device, DeviceType } from "../entities"
 import { useConnectionState } from "../hooks/useConnectionState"
@@ -45,7 +45,7 @@ export const Devices = () => {
     useFlashLeds();
 
     const addBluetoothDevice = () => {
-        //Due to security restrictions, the connectionFactory cannot initiate a connection given a bluetooth address.
+        //Due to security restrictions, the connectionPool cannot initiate a connection given a bluetooth address.
         //We go through the UI steps to create a connection here, and manually put in the connection pool
 
         //this will trigger the browsers BLE connection popup and return a connection object that is waiting for 
@@ -62,7 +62,7 @@ export const Devices = () => {
                     pixelCount: 50
                 }
 
-                connectionFactory.setConnection(device, connection);
+                connectionPool.setConnection(device, connection);
                 dispatch(addDevice(device))
             }
             connection.removeStateListener(listener)

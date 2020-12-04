@@ -1,5 +1,5 @@
 import { Device } from "../entities/device"
-import { connectionFactory } from "./connectionFactory";
+import { connectionPool } from "./connectionPool";
 import { IConnection } from "./IConnection";
 import { IEncoder } from "../encoders/IEncoder"
 
@@ -9,7 +9,7 @@ export class DevicesController {
     constructor(devices: Device[]) {
         this.deviceControllers = devices.map(device => ({
             device,
-            connection: connectionFactory.getConnection(device)
+            connection: connectionPool.getConnection(device)
         }));
     }
 
