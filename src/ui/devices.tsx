@@ -1,41 +1,37 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
+import { BLEConnection } from "../core/bleConnection"
 import { connectionFactory } from "../core/connectionFactory"
 import { States } from "../core/IConnection"
-import { Device } from "../entities"
-import { ActiveStep, addDefaultDevice, removeDevice, setName, setStep, State, updateHostname, updatePixelCount } from "../redux"
+import { Device, DeviceType } from "../entities"
+import { useConnectionState } from "../hooks/useConnectionState"
+import { useFlashLeds } from "../hooks/useFlashLeds"
+import { ActiveStep, addDefaultDevice, addDevice, removeDevice, setName, setStep, State, updateHostname, updatePixelCount } from "../redux"
 import { UploadStateButton } from "./uploadDownloadState"
 
 const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
-
     const dispatch = useDispatch();
-    const [state, setState] = useState<States>(connectionFactory.getConnection(device).getState())
     const [hostname, setHostname] = useState(device.hostname)
     const editing = hostname !== device.hostname
-
-    useEffect(() => {
-        connectionFactory.getConnection(device).addStateListener(setState)
-        return () => {
-            connectionFactory.getConnection(device).removeStateListener(setState)
-        }
-    }, [device])
-
-    useEffect(() => { setState(connectionFactory.getConnection(device).getState()) }, [device])
+    const { state, reconnect } = useConnectionState(device);
 
     return (
         <div className="devicePanel">
-            <div>Hostname</div><input value={hostname} onChange={e => setHostname(e.target.value)} onBlur={() => dispatch(updateHostname(index, hostname))} />
+            {device.type === DeviceType.BLE ?
+                <><div>Device name</div><span>{hostname}</span></> :
+                <><div>Hostname</div><input value={hostname} onChange={e => setHostname(e.target.value)} onBlur={() => dispatch(updateHostname(index, hostname))} /></>
+            }
             <div>Pixel count</div><input value={device.pixelCount || ""} onChange={e => dispatch(updatePixelCount(index, e.target.value ? parseInt(e.target.value) : 0))} type="number" />
 
             <div>State</div>
             <div>
                 <ConnectionChip state={state} dirty={editing} />
-                {!editing && <CertificateChip state={state} device={device} />}
-                {state === States.Disconnected && <button style={{ marginLeft: "10px", height: "28px", width: "unset" }} onClick={() => connectionFactory.getConnection(device, true)}><span role="img" aria-label="retry">↻</span></button>}
+                {device.type !== DeviceType.BLE && !editing && <CertificateChip state={state} device={device} />}
+                {state === States.Disconnected && <button style={{ marginLeft: "10px", height: "28px", width: "unset", top: "-2px", position: "relative" }} onClick={reconnect}><span role="img" aria-label="retry">↻</span></button>}
             </div>
 
             <div>Remove</div>
-            <button onClick={() => dispatch(removeDevice(index))} style={{height: "28px", width: "32px" }}>🗑</button>
+            <button onClick={() => dispatch(removeDevice(index))} style={{ height: "28px", width: "32px" }}>🗑</button>
 
         </div>
     )
@@ -45,22 +41,34 @@ export const Devices = () => {
     const dispatch = useDispatch();
     const devices = useSelector<State, Device[]>(state => state.devicesReducer.devices)
     const name = useSelector<State, string>(state => state.devicesReducer.name || '')
+    useFlashLeds();
 
-    const flashState = useRef(false);
-    useEffect(() => {
-        const interval = setInterval(() => {
-            flashState.current = !flashState.current
-            devices.forEach(device => {
-                const conn = connectionFactory.getConnection(device)
-                if (conn.getState() !== States.Connected)
-                    return
-                conn.sendData(new Array(device.pixelCount).fill(flashState.current ? 25 : 0))
-            })
-        }, 500)
-        return () => {
-            clearInterval(interval);
+    const addBluetoothDevice = () => {
+        //Due to security restrictions, the connectionFactory cannot initiate a connection given a bluetooth address.
+        //We go through the UI steps to create a connection here, and manually put in the connection pool
+
+        //this will trigger the browsers BLE connection popup and return a connection object that is waiting for 
+        //the user to select a device. As soon as it starts connecting create the device and add it to the ui.
+        const connection = new BLEConnection();
+
+        const listener = (state: States) => {
+            if (state === States.Connecting) {
+                const hostname = connection.getHostname() ?? "Unknown device";
+
+                const device: Device = {
+                    type: DeviceType.BLE,
+                    hostname: hostname,
+                    pixelCount: 50
+                }
+
+                connectionFactory.setConnection(device, connection);
+                dispatch(addDevice(device))
+            }
+            connection.removeStateListener(listener)
         }
-    })
+
+        connection.addStateListener(listener);
+    }
 
     return <div className="devices">
         <div className="deviceSettingsPanel">
@@ -70,13 +78,16 @@ export const Devices = () => {
 
         {devices.map((device, index) => <DevicePanel key={index} device={device} index={index} />)}
 
-        <button onClick={() => dispatch(addDefaultDevice())}>Add device</button>
+        <div style={{ display: "flex", gap: "10px" }}>
+            <button onClick={() => dispatch(addDefaultDevice())}>+ Add websocket device</button>
+            <button onClick={addBluetoothDevice}>+ Add BLE device</button>
+        </div>
 
-        <br /><br />
+        <br />
 
         <button onClick={() => dispatch(setStep(ActiveStep.Capture))}>Capture &gt;&gt;</button>
 
-        <hr/>
+        <hr />
 
         <UploadStateButton />
 
@@ -85,7 +96,7 @@ export const Devices = () => {
 }
 
 type ConnectionChipProps = {
-    dirty: boolean
+    dirty?: boolean
     state: States
 }
 

@@ -1,11 +1,11 @@
-import { Device } from "../entities"
+import { Device, DeviceType } from "../entities"
 
 export type AddDeviceType = {
     type: 'ADD_DEVICE'
     device: Device
 }
 
-export const addDefaultDevice = () => addDevice({ hostname: "", port: 0, pixelCount: 50 })
+export const addDefaultDevice = () => addDevice({ type: DeviceType.Websocket ,hostname: "", pixelCount: 50 })
 
 export const addDevice = (device: Device): AddDeviceType => ({
     type: 'ADD_DEVICE',
@@ -113,13 +113,7 @@ export type DevicesState = {
 
 const initialState: DevicesState =
 {
-    devices: [
-        {
-            hostname: "192.168.1.106",
-            port: 9601,
-            pixelCount: 50,
-        }
-    ],
+    devices: [],
     name: "pixelmapper"
 }
 

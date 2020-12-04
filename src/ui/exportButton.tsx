@@ -39,7 +39,7 @@ export const ExportButton = ({ children, type='csv'}: ExportButtonProps) => {
             const pixelStart = devices.slice(0, index).map(d => d.pixelCount).reduce((a, b) => a + b, 0);
             const pixelsInDevice = pixels.slice(pixelStart, pixelStart + device.pixelCount)
 
-            return `host=${device.hostname}:${device.port}\n` +
+            return `host=${device.hostname}\n` +
                 pixelsInDevice.map(pixel => positionToString(transformPosition(pixel.position))).join("\n")
         }).join("\n")
     }
@@ -68,7 +68,7 @@ export const ExportButton = ({ children, type='csv'}: ExportButtonProps) => {
                 const pixelsInDevice = pixels.slice(pixelStart, pixelStart + device.pixelCount)
     
                 return `
-                //device${index} = ${device.hostname}:${device.port}
+                //device${index} = ${device.hostname}
                 const int device${index}Count = ${device.pixelCount};
                 //x0,y0,  x1,y1,  x2,y2,  etc
                 const int16_t device${index}Positions[${device.pixelCount * 2}] = { ${pixelsInDevice.map(pixel => positionToString(transformPosition(pixel.position))).join(",  ") } };

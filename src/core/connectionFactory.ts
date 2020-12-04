@@ -1,5 +1,6 @@
-import { Device } from "../entities"
+import { Device, DeviceType } from "../entities"
 import { deviceHash } from "../utils";
+import { BLEConnection } from "./bleConnection";
 import { IConnection } from "./IConnection"
 import { WebsocketConnection } from "./websocketConnection";
 
@@ -18,10 +19,19 @@ class ConnectionFactory {
     }
 
     createConnection(device: Device) {
-        //todo proper factory here
-        return new WebsocketConnection(device)
+        switch (device.type){
+            case DeviceType.BLE:
+                return new BLEConnection(device)
+            default:
+                return new WebsocketConnection(device)
+        }
     }
 
+    setConnection(device: Device, connection:IConnection)
+    {
+        const hash = deviceHash(device)
+        this.connections[hash] = connection
+    }
 }
 
 export const connectionFactory = new ConnectionFactory()
