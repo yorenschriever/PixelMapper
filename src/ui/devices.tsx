@@ -4,6 +4,7 @@ import { BLEConnection } from "../core/bleConnection"
 import { connectionPool } from "../core/connectionPool"
 import { States } from "../core/IConnection"
 import { Device, DeviceType } from "../entities"
+import { useBrowserCapabilities } from "../hooks/useBrowserCapabilities"
 import { useConnectionState } from "../hooks/useConnectionState"
 import { useFlashLeds } from "../hooks/useFlashLeds"
 import { ActiveStep, addDefaultDevice, addDevice, removeDevice, setName, setStep, State, updateHostname, updatePixelCount } from "../redux"
@@ -18,7 +19,7 @@ const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
     const { state, reconnect } = useConnectionState(device)
 
     const handleRemove = () => {
-        if (devices.filter(d => deviceHash(d)===deviceHash(device)).length===1)
+        if (devices.filter(d => deviceHash(d) === deviceHash(device)).length === 1)
             connectionPool.removeConnection(device)
         dispatch(removeDevice(index))
     }
@@ -78,29 +79,34 @@ export const Devices = () => {
         connection.addStateListener(listener);
     }
 
-    return <div className="devices">
-        <div className="deviceSettingsPanel">
-            <div>Project name</div>
-            <input value={name} onChange={event => dispatch(setName(event.currentTarget.value))} />
+    const { camera, ble, websocket} = useBrowserCapabilities();
+
+    return <>
+        <SupportWarnings />
+        <div className="devices">
+            <div className="deviceSettingsPanel">
+                <div>Project name</div>
+                <input value={name} onChange={event => dispatch(setName(event.currentTarget.value))} />
+            </div>
+
+            {devices.map((device, index) => <DevicePanel key={deviceHash(device)} device={device} index={index} />)}
+
+            <div style={{ display: "flex", gap: "10px" }}>
+                <button onClick={() => dispatch(addDefaultDevice())} disabled={!websocket}>+ Add websocket device</button>
+                <button onClick={addBluetoothDevice} disabled={!ble}>+ Add BLE device</button>
+            </div>
+
+            <br />
+
+            <button onClick={() => dispatch(setStep(ActiveStep.Capture))} disabled={!camera || devices.length===0}>Capture &gt;&gt;</button>
+
+            <hr />
+
+            <UploadStateButton />
+
+            <a href="https://github.com/yorenschriever/PixelMapper" className="sourcelink">Source and documentation</a>
         </div>
-
-        {devices.map((device, index) => <DevicePanel key={deviceHash(device)} device={device} index={index} />)}
-
-        <div style={{ display: "flex", gap: "10px" }}>
-            <button onClick={() => dispatch(addDefaultDevice())}>+ Add websocket device</button>
-            <button onClick={addBluetoothDevice}>+ Add BLE device</button>
-        </div>
-
-        <br />
-
-        <button onClick={() => dispatch(setStep(ActiveStep.Capture))}>Capture &gt;&gt;</button>
-
-        <hr />
-
-        <UploadStateButton />
-
-        <a href="https://github.com/yorenschriever/PixelMapper" className="sourcelink">Source and documentation</a>
-    </div>
+    </>
 }
 
 type ConnectionChipProps = {
@@ -142,3 +148,17 @@ export const CertificateChip = ({ state, device }: CertificateChipProps) => {
         <a href={`https://${device.hostname}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}><span role="img" aria-label="accept certificate">🔑</span></a>
     </span>
 }
+
+const SupportWarnings = () => {
+    const { camera, ble, websocket, worker, wasm } = useBrowserCapabilities();
+
+    return <div className="supportWarnings">
+        {camera === false && <div className="supportWarning">Could not find a camera on this device. Capturing is not possible, but you can load states that were made on another device.</div>}
+        {ble === false && <div className="supportWarning">Bluetooth connections are not supported your device.</div>}
+        {websocket === false && <div className="supportWarning">Websocket connections are not supported on your device.</div>}
+        {(worker === false || wasm === false) && <div className="supportWarning">Processing will not be possible on this device. {camera && "After capturing you can save the state and load it on another device."}</div>}
+    
+        {(camera===false || ble===false || websocket===false || worker===false || wasm===false) && <div className="supportSuggestion">Use a recent version of Edge or Chrome to get the best experience.</div>}
+    </div>
+}
+

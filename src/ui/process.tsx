@@ -10,6 +10,7 @@ import { useWorker } from "../worker/useWorker"
 import { encoderTypeSelector, numPixelsSelector } from "../redux/selectors"
 import { createRunMessage } from "../utils"
 import { EncoderType } from "../encoders/encoderFactory"
+import { useBrowserCapabilities } from "../hooks/useBrowserCapabilities"
 
 export const Process = () => {
     const dispatch = useDispatch()
@@ -29,6 +30,9 @@ export const Process = () => {
     const numPixels = useSelector<State, number>(numPixelsSelector)
     const encoderType = useSelector<State, EncoderType>(encoderTypeSelector)
     const captureState = useSelector<State, CaptureState>(i => i.captureReducer)
+
+    const capabilities = useBrowserCapabilities();
+    const canprocess = capabilities.worker !== false && capabilities.wasm !== false
 
     const positionMapper = (data: any): Position | undefined => (data ? { x: data.x, y: data.y, confidence: data.intensity } : undefined)
 
@@ -64,6 +68,7 @@ export const Process = () => {
     }, [dispatch, setShowingDebugImg, showingDebugimg])
 
     const attachWorker = useCallback(async () => {
+        if (!worker) return;
         worker.onerror = (err) => {
             console.log('error', err)
             setError(JSON.stringify({ error: err.message }))
@@ -77,17 +82,27 @@ export const Process = () => {
     }, [setError, workerMessageHandler, processing, setProcessing, captureState, numPixels, encoderType, worker])
 
     useEffect(() => {
+        if (!canprocess) return;
         attachWorker()
         return () => {
+            if (!worker) return;
             worker.onerror = null
             worker.onmessage = null
             //wrk.postMessage({type:"CLEAN"})
             //wrk?.terminate();
         }
-    }, [attachWorker, dispatch, numPixels, previewImage, worker])
+    }, [attachWorker, dispatch, numPixels, previewImage, worker, canprocess])
 
-    useEffect(() => { compressedImageToCanvas(previewImage, canvas.current!) }, [previewImage])
+    useEffect(() => { canvas.current && compressedImageToCanvas(previewImage, canvas.current!) }, [previewImage])
     useEffect(() => { dispatch(initPixels(numPixels)) }, [numPixels, dispatch])
+
+    if (!canprocess)
+        return <>
+            <div className="supportWarnings">
+                <div className="supportWarning">Processing is not possible on this device. You can save the state now, and continue on another device.</div>
+            </div>
+            <BurgerMenu />
+        </>
 
     return <>
         <canvas ref={canvas} className="processCanvas" />

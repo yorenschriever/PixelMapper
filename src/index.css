@@ -143,7 +143,7 @@ button {
   width: 360px;
   padding: 20px;
 
-  position: absolute;
+  position: relative;
   top: 24px;
   left: 50vw;
   transform: translate(-50%, 0);
@@ -197,4 +197,29 @@ a.sourcelink {
   text-align: center;
   display: inline-block;
   width: 100%;
+}
+
+/* .supportWarnings {
+  //position:abolsolute;
+  //top:0;
+} */
+
+.supportWarning {
+  border: 1px solid red;
+  display: inline-block;
+  background-color: #fdd;
+  color: black;
+  border-radius: 5px;
+  padding: 3px;
+  margin: 5px;
+}
+
+.supportSuggestion {
+  border: 1px solid green;
+  display: inline-block;
+  background-color: #dfd;
+  color: black;
+  border-radius: 5px;
+  padding: 3px;
+  margin: 5px;
 }
