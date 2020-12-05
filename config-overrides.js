@@ -27,7 +27,7 @@ module.exports = function override(config, env) {
     excludeOpenCV(config.module.rules)
     
     //ForkTsCheckerWebpackPlugin is slowing things down
-    if (config.mode='production')
+    if (config.mode=='production')
         config.plugins = config.plugins.filter(i=>i.constructor.name !== "ForkTsCheckerWebpackPlugin") 
 
     return config
