@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { PixelMapper } from "./pixelMapper";
-import cv from "./opencv"
+self.importScripts(`${process.env.PUBLIC_URL}/opencv.js`);
+/* global cv */
 
 const listener = (body) => {
     if (body.img) {

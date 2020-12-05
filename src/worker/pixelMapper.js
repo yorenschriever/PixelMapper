@@ -1,6 +1,7 @@
 import simpleBlobDetector from "./simpleBlobDetector"
-import cv from "./opencv"
 import { encoderFactory } from "../encoders/encoderFactory"
+/* global cv */
+
 export class PixelMapper {
     codedImage = []
     codedImageNegative = []
