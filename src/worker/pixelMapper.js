@@ -25,14 +25,14 @@ export class PixelMapper {
 
     constructor(listener) {
         this.listener = listener
-        console.log('pixelmapper constructor')
+        console.log('Pixelmapper constructor')
     }
 
     init = (whiteImage, blackImage, sliceImages, numPixels, encoderType) => {
         this.initialized = true
 
         console.log('initializing mapper', { numPixels, encoderType })
-        this.sendStatus('initializing')
+        this.sendStatus('Initializing')
 
         this.encoder = encoderFactory(encoderType, numPixels)
 
@@ -44,14 +44,14 @@ export class PixelMapper {
 
         let preparedBlackImage = undefined;
         if (blackImage) {
-            this.sendStatus('preparing black image')
+            this.sendStatus('Preparing black image')
             preparedBlackImage = this.prepareImage(blackImage, undefined, undefined, false)
         }
 
-        this.sendStatus('preparing start image')
+        this.sendStatus('Preparing start image')
         this.startImage = this.prepareImage(whiteImage, preparedBlackImage, undefined, true)
 
-        this.sendStatus('processing slice images')
+        this.sendStatus('Processing slice images')
         this.codedImage = []
         this.codedImageNegative = []
         sliceImages.forEach(image => {
@@ -70,7 +70,7 @@ export class PixelMapper {
     }
 
     run = () => {
-        this.sendStatus('starting decode')
+        this.sendStatus('Decoding positions')
         this.decodeRecursive(this.startImage, 0, this.numSlices)
 
         this.listener({

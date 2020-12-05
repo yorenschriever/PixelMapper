@@ -62,10 +62,7 @@ button {
   transform: translate(-50%, -50%);
 }
 
-.processStatus {
-  position:absolute;
-  color:#fff;
-}
+
 
 
 .pixelCarousel {
@@ -199,25 +196,37 @@ a.sourcelink {
   width: 100%;
 }
 
-/* .supportWarnings {
-  //position:abolsolute;
-  //top:0;
-} */
+.notificationsFloating {
+  position:absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 
-.supportWarning {
-  border: 1px solid red;
-  background-color: #fdd;
+.notifications {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.error, .warning, .info {
   color: black;
   border-radius: 5px;
   padding: 3px;
   margin: 5px;
 }
 
-.supportSuggestion {
+.error {
+  border: 1px solid red;
+  background-color: #fdd;
+}
+
+.warning {
+  border: 1px solid orange;
+  background-color: #ffd;
+}
+
+.info {
   border: 1px solid green;
   background-color: #dfd;
-  color: black;
-  border-radius: 5px;
-  padding: 3px;
-  margin: 5px;
 }

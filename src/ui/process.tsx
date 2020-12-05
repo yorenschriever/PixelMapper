@@ -108,10 +108,10 @@ export const Process = () => {
         <canvas ref={canvas} className="processCanvas" />
         <canvas ref={debugCanvas} className="processCanvas" style={{ display: showingDebugimg ? "block" : "none" }} />
 
-        <div className="processStatus">
-            {status}
-            {error}
-            {debug}
+        <div className="notificationsFloating">
+            {status && <div className="info">{status}</div>}
+            {error && <div className="error">Error while processing: {error}</div>}
+            {debug && <div className="info">{debug}</div>}
         </div>
 
         <BurgerMenu />

@@ -45,7 +45,7 @@ export const Review = () => {
             case "ISINITIALIZEDRESPONSE":
                 if (!event.data.initialized) {
                     const runmsg = await createRunMessage(captureState, numPixels, encoderType, 'INITONLY')
-                    worker.postMessage(runmsg)
+                    worker?.postMessage(runmsg)
                 }
                 break;
             default:
@@ -53,6 +53,7 @@ export const Review = () => {
     }, [pixels, setShowingDebugImg, worker, captureState, numPixels, encoderType])
 
     useEffect(() => {
+        if (!worker) return;
         worker.onerror = (err) => {
             console.log('error', err)
             setError(JSON.stringify({ error: err.message }))
@@ -163,8 +164,8 @@ export const Review = () => {
 
         {crop && !showingDebugimg && <Crop canvas={canvas} baseImage={baseImage} />}
 
-        <div className="processStatus">
-            {error}
+        <div className="notificationsFloating">
+            {error && <div className="error">Error while processing: {error}</div>}
         </div>
 
         <PixelCarousel pixels={pixels} activePixel={activePixel} setActivePixel={setActivePixel} setWaitManualPlacement={setWaitManualPlacement} show={waitManualPlacement === undefined} />
@@ -300,7 +301,7 @@ const PositionMenu = ({ pixel, setWaitManualPlacement, closeMenu, x }: PositionM
 
             {!pixel.position && <button onClick={() => dispatch(interpolate(pixel.index))}>Interpolate</button>}
 
-            <button onClick={() => worker.postMessage({ type: "RECALCULATE", code: pixel.code, index: pixel.index })}>Show calculated</button>
+            <button onClick={() => worker?.postMessage({ type: "RECALCULATE", code: pixel.code, index: pixel.index })}>Show calculated</button>
 
             <button onClick={closeMenu}>Close menu</button>
         </div>
