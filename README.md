@@ -125,5 +125,6 @@ You can run the code locally if you want to make changes, add functionality and 
 - **Include quartz composer example sketch**
 - **Test led button in example sketch** Make the ESP32s button light up all leds. This is useful for debugging your hardware configuration.
 - **Detect branches in the binary tree that will not end in a code.** This will speed up the solve process for less dense coding schemes
+- **Offline availability.** Make the PWA work offline, so it can be used in venues without an internet connection
 
 Suggestions and questions are welcome.
