@@ -25,7 +25,8 @@ button {
   top:25px; 
   display:flex;
   flex-direction:column; 
-  align-items:flex-end;
+  flex-wrap: wrap-reverse;
+  max-height: calc(100vh - 150px);
 }
 
 .burgerMenuButton {
@@ -67,7 +68,7 @@ button {
 
 .pixelCarousel {
   position: fixed;
-  bottom: 25px;
+  bottom: 0px;
   width: 100vw;
 }
 
