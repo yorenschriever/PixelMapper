@@ -22,8 +22,7 @@ The first one is an example under optimal conditions: Every led will be solved. 
 ![](https://github.com/yorenschriever/PixelMapper/raw/master/public/collage.jpg)
 
 ## Map your own leds
-I created a simple Arduino sketch that you can upload to the ESP32. You can find it in the [Tools](https://github.com/yorenschriever/PixelMapper/tree/master/tools/pixelmapper_esp32_neopixels) folder. It's a stripped down version of the [Hyperion](https://github.com/yorenschriever/Hyperion) project, where I only left in the parts that handle websockets and drive the Neopixels. To get you started quickly I took a shortcut by including a hardcoded certificate. If you are actually going to use this for a prolonged time, it is safer to generate your own certificate. Instructions for that are in the [ESP32 HTTPS Server](https://github.com/fhessel/esp32_https_server) library.
-  
+
 ### Hardware  
 - **ESP32.** I work with a [ESP32-POE](https://www.olimex.com/Products/IoT/ESP32/ESP32-POE/open-source-hardware) with ethernet connectivity, but a NodeMCU or any other board will do fine.
 - **Ledstrip.** The example sketch drives Neopixels. I really like these ones from [AliExpress](https://nl.aliexpress.com/item/4000242860388.html). ([Adafruit](https://www.adafruit.com/product/4560) and [Sparkfun](https://www.sparkfun.com/products/16792) sell similar strings.) Any other type of Neopixels will also work. You can also change the sketch to use another library if you want to use leds with a different protocol. The mapper algorithm doesn't care.
@@ -32,30 +31,22 @@ I created a simple Arduino sketch that you can upload to the ESP32. You can find
 
 In the example pictures above I used 800 leds for a tree that is roughly conical with a radius of 0.5m and a height of 1.5m. That comes down to 322 leds/m2 if you need a reference for the led density. The total price for the hardware for that project was about 150 euro. 
 
-### Software  
+### Firmware  
 - Install [Arduino IDE](https://www.arduino.cc/en/software)  
 - Get the [ESP32 core](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/) 
-- Get [ESP32 HTTPS Server library](https://github.com/fhessel/esp32_https_server#arduino-ide).
+- Depending on your board and os you might need [CH340 drivers](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all#drivers-if-you-need-them)
+- Now you are ready to upload the [Pixelmapper BLE sketch](https://github.com/yorenschriever/PixelMapper/tree/master/tools/pixelmapper_esp32_neopixels_ble) to you ESP32. 
 
-1. Open the [Arduino sketch](https://github.com/yorenschriever/PixelMapper/tree/master/tools/pixelmapper_esp32_neopixels) from the tool folder. Create a file "password.h", and add your wifi credentials like this:
-
-```
-#define WIFI_SSID "YOUR_SSID"
-#define WIFI_PSK "YOUR_PASSWORD"
-```
-
-2. Upload the sketch to the ESP32. Afterwards open the serial port so see if it can connect to the network. After it's connected it will print its IP address. 
+This sketch will use bluetooth low energy to receive pixeldata from the pixelmapper. This is the easiest way to get started, but your phone needs to have BLE, and your browser needs to implement the web bluetooth API. BLE also becomes less reliable when using larger number of leds (> 1000). If you do not want to use BLE you can try the [Pixelmapper Websocket sketch](https://github.com/yorenschriever/PixelMapper/tree/master/tools/pixelmapper_esp32_neopixels_ble). It is a bit more complicated, but more powerful and reliable.
 
 ### Start mapping
-1. Use your phone to go to https://[ip of the esp]. This will test if your phone and ESP32 are on the same network and can find each other. It will also trigger a screen where you can accept the self-signed certificate of the esp. (You know the drill: "This certificate is not trusted" -> More info -> Continue anyway). You need to accept the certificate here to establish the websocket connection later on. This step can be slow.
-2. Open [Pixelmapper](https://yorenschriever.github.io/pixelmapper/). Fill in the ip address and number of leds, and wait for a connection. When connected, all leds should flash at a stable 1Hz to indicate a good connection.
-3. Put your phone in a tripod (Mapping will not work without it. Really) and press 'Capture' to start capturing. This will take a few seconds. 
-4. After capturing the mapping will start automatically. You will see the positions appear on the screen one by one. When all pixels are mapped you can browse through all matches, tweak them and export them as CSV.
+1. Open [Pixelmapper](https://yorenschriever.github.io/pixelmapper/). Click 'Add BLE device', select your pixelmapper, fill in the number of leds, and wait for a connection. When connected, all leds should flash at a stable 1Hz to indicate a good connection.
+2. Put your phone in a tripod (Mapping will not work without it. Really) and press 'Capture' to start capturing. This will take a few seconds. 
+3. After capturing the mapping will start automatically. You will see the positions appear on the screen one by one. When all pixels are mapped you can browse through all matches, tweak them and export them as CSV.
 
-The CSV file contains the positions in a coordinate system [-1,1] x [-1,1]. How you can use these positions to display patterns is out of scope of this project. If you are familiar with quartz composer (macos), i got a plugin that will send out your composition to the leds. Let me know if you are interested. You can also export a header (*.h) file if you want to use the positions in one of your Arduino projects directly (still experimental, the format might change)
+The CSV file contains the positions in a coordinate system [-1,1] x [-1,1]. How you can use these positions to display patterns is out of scope of this project. If you are familiar with quartz composer (macos), I got a plugin that will send out your composition to the leds. Let me know if you are interested. You can also export a header (*.h) file if you want to use the positions in one of your Arduino projects directly (still experimental, the format might change)
 
 Pro tip: At any point in the process you can download the current state from the hamburger menu. This is useful if you want to create a backup, continue at a later time, or continue on another device. I found it convenient to download the state after capturing, send it to my desktop and do the review and export on a large monitor. 
-(For the christmas tree project i was forced into this workflow, because my phones browser got an out of memory exception during the mapping, but my desktop has no problem with it)
   
 ## How does it work?
 It is an old project that I have ported a few times over the years. It started out as a dedicated hardware device based on a Raspberry pi and a camera module. The code was written in cpp and not very flexible. As phones became more powerful, about 5 years ago, i realised that this would be the ideal platform, because they are smaller and easy available. I rewrote it in java in Android studio and created an app out of it. It worked, but was now only available on android, and because i wasn't too familiar with writing native apps, the ui was spartan. Now technology has advanced, I realised it would be possible to do it all in the browser. This would make Pixelmapper available on Android, ios and desktop, without bothering about app stores or installers. 
@@ -120,12 +111,9 @@ You can run the code locally if you want to make changes, add functionality and 
 - `npm start`  
   
 ### Open issues, help to improve  
-- **BLE connectivity.** This would eliminate all the hassle with certificates and wifi passwords, and would clean up the start screen as well.
 - **Improve the hybrid phone/desktop interface.** The led menu is trying to be helpful on both types of devices, but arguably this only makes it worse.
 - **UX of initial screen.**  It's an ugly beast
 - **Improve export .h file**  Current format is not well though out
-- **Browser check** Display a friendly message if the used browser doesn't support websockets / wasm / workers 
-- **Out of memory on small devices** See if some variables can be freed earlier, if the allowed memory can be increased, and if not: make a friendly message out of it
 - **Use colour channels to reduce number of images**
 - **Make it work without tripod 1: Stabilisation** 
 - **Make it work without tripod 2: Totally different approach** I do not expect that stabilisation will be able to compensate for larger movements. Find something else.

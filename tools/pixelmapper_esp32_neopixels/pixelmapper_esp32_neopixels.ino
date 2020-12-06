@@ -2,6 +2,9 @@
 //based on this lib:
 //https://github.com/fhessel/esp32_https_server
 
+//INSTRUCTIONS:
+//https://github.com/yorenschriever/PixelMapper/tree/master/tools/pixelmapper_esp32_neopixels
+
 // Max clients to be connected to the mapper
 #define MAX_CLIENTS 1
 
