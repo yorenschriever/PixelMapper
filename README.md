@@ -37,7 +37,7 @@ In the example pictures above I used 800 leds for a tree that is roughly conical
 - Depending on your board and os you might need [CH340 drivers](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all#drivers-if-you-need-them)
 - Now you are ready to upload the [Pixelmapper BLE sketch](https://github.com/yorenschriever/PixelMapper/tree/master/tools/pixelmapper_esp32_neopixels_ble) to you ESP32. 
 
-This sketch will use bluetooth low energy to receive pixeldata from the pixelmapper. This is the easiest way to get started, but your phone needs to have BLE, and your browser needs to implement the web bluetooth API. BLE also becomes less reliable when using larger number of leds (> 1000). If you do not want to use BLE you can try the [Pixelmapper Websocket sketch](https://github.com/yorenschriever/PixelMapper/tree/master/tools/pixelmapper_esp32_neopixels_ble). It is a bit more complicated, but more powerful and reliable.
+This sketch will use bluetooth low energy to receive data from the pixelmapper. This is the easiest way to get started, but your phone needs to have BLE, and your browser needs to implement the web bluetooth API. BLE also becomes less reliable when using larger number of leds (> 1000). If you do not want to use BLE you can try the [Pixelmapper Websocket sketch](https://github.com/yorenschriever/PixelMapper/tree/master/tools/pixelmapper_esp32_neopixels_ble). It is a bit more complicated, but more powerful and reliable.
 
 ### Start mapping
 1. Open [Pixelmapper](https://yorenschriever.github.io/pixelmapper/). Click 'Add BLE device', select your pixelmapper, fill in the number of leds, and wait for a connection. When connected, all leds should flash at a stable 1Hz to indicate a good connection.

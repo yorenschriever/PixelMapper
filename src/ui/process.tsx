@@ -70,8 +70,8 @@ export const Process = () => {
     const attachWorker = useCallback(async () => {
         if (!worker) return;
         worker.onerror = (err) => {
-            console.log('error', err)
-            setError(JSON.stringify({ error: err.message }))
+            console.error('Processing error', err)
+            setError("Something went wrong when trying to process the images. You can save your state and try again at a later time or on another device.")
         }
         worker.onmessage = workerMessageHandler
 
@@ -110,7 +110,7 @@ export const Process = () => {
 
         <div className="notificationsFloating">
             {status && <div className="info">{status}</div>}
-            {error && <div className="error">Error while processing: {error}</div>}
+            {error && <div className="error">{error}</div>}
             {debug && <div className="info">{debug}</div>}
         </div>
 

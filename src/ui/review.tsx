@@ -55,8 +55,8 @@ export const Review = () => {
     useEffect(() => {
         if (!worker) return;
         worker.onerror = (err) => {
-            console.log('error', err)
-            setError(JSON.stringify({ error: err.message }))
+            console.error('Processing error', err)
+            setError("Something went wrong when trying to process the images. You can save your state and try again at a later time or on another device.")
         }
         worker.onmessage = workerMessageHandler
         worker.postMessage({ type: 'ISINITIALIZEDREQUEST' })
@@ -165,7 +165,7 @@ export const Review = () => {
         {crop && !showingDebugimg && <Crop canvas={canvas} baseImage={baseImage} />}
 
         <div className="notificationsFloating">
-            {error && <div className="error">Error while processing: {error}</div>}
+            {error && <div className="error">{error}</div>}
         </div>
 
         <PixelCarousel pixels={pixels} activePixel={activePixel} setActivePixel={setActivePixel} setWaitManualPlacement={setWaitManualPlacement} show={waitManualPlacement === undefined} />
