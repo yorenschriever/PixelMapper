@@ -22,6 +22,6 @@
 8. Open [Pixelmapper](https://yorenschriever.github.io/pixelmapper/). Fill in the ip address and number of leds, and wait for a connection. When connected, all leds 
 should flash at a stable 1Hz to indicate a good connection.
 
-9. From here the steps are the same as for the BLE sketch. See [Pixelampper project readme](https://github.com/yorenschriever/PixelMapper/tree/master/)
+9. From here the steps are the same as for the BLE sketch. See [Pixelmapper project readme](https://github.com/yorenschriever/PixelMapper/tree/master/)
 
 
