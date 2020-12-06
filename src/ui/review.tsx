@@ -12,11 +12,40 @@ import { createRunMessage } from '../utils'
 import { EncoderType } from '../encoders/encoderFactory'
 import { encoderTypeSelector, numPixelsSelector } from '../redux/selectors'
 import { Crop } from './crop'
+import { useHandleOutsideClick } from '../hooks/useHandleOutsideClick'
 
 const getAlternatives = (pixel: Pixel) => pixel.alternativePositions.slice(0, 5).map((pos, index) => ({
     label: String.fromCharCode(index + 65),
     position: pos
 }))
+
+// type ReviewUIStateType = {
+//     //hamburgerMenuOpen: boolean
+//     pixelMenuOpen: boolean
+//     activePixel: number
+//     showingDebugimg: boolean
+//     manualPlacement: number | undefined
+// }
+
+// type ReviewUIStateAction = {
+//     type: "SHOW_DEBUG_IMG",
+//     value: boolean
+// } | {
+//     type: "SET_ACTIVE_PIXEL" | "MANUAL_PLACEMENT"
+//     value?: number
+// }
+
+// const initialReviewUIState : ReviewUIStateType = {
+//     //hamburgerMenuOpen: false,
+//     pixelMenuOpen: false,
+//     activePixel: 0,
+//     showingDebugimg: false,
+//     manualPlacement: undefined
+// }
+
+// const reviewUIReducer = (state: ReviewUIStateType, action: ReviewUIStateAction) => {
+//     return state
+// }
 
 export const Review = () => {
     const dispatch = useDispatch()
@@ -25,14 +54,18 @@ export const Review = () => {
     const debugCanvas = useRef<HTMLCanvasElement | null>(null)
     const pixels = useSelector<State, Pixel[]>(state => state.processReducer.pixels)
     const previewImage = useSelector<State, CompressedImage>(state => state.processReducer.preview!)
+    
     const [activePixel, setActivePixel] = useState<number>(0)
     const [waitManualPlacement, setWaitManualPlacement] = useState<number | undefined>(undefined)
     const [showingDebugimg, setShowingDebugImg] = useSwitch(false);
+    
     const worker = useWorker();
     const numPixels = useSelector<State, number>(numPixelsSelector)
     const encoderType = useSelector<State, EncoderType>(encoderTypeSelector)
     const captureState = useSelector<State, CaptureState>(i => i.captureReducer)
     const crop = useSelector<State, CropType | undefined>(i => i.processReducer.crop)
+
+    //const [{showingDebugimg, manualPlacement, activePixel}, dispatchUI] = useReducer(reviewUIReducer, initialReviewUIState);
 
     const workerMessageHandler = useCallback(async (event: MessageEvent<any>) => {
         switch (event.data.type) {
@@ -41,6 +74,7 @@ export const Review = () => {
                 const context = debugCanvas.current!.getContext('2d')!
                 getAlternatives(pixels[event.data.index]).forEach(alt => drawPosition(context, alt.position, alt.label, DrawPixelType.Alternative))
                 setShowingDebugImg.on()
+                //dispatchUI({type:'',true})
                 break;
             case "ISINITIALIZEDRESPONSE":
                 if (!event.data.initialized) {
@@ -166,6 +200,7 @@ export const Review = () => {
 
         <div className="notificationsFloating">
             {error && <div className="error">{error}</div>}
+            {waitManualPlacement !== undefined && <div className="info">Click to position pixel {waitManualPlacement}</div>}
         </div>
 
         <PixelCarousel pixels={pixels} activePixel={activePixel} setActivePixel={setActivePixel} setWaitManualPlacement={setWaitManualPlacement} show={waitManualPlacement === undefined} />
@@ -199,10 +234,15 @@ type PixelCarouselProps = {
 
 const PixelCarousel = ({ pixels, activePixel, setActivePixel, setWaitManualPlacement, show }: PixelCarouselProps) => {
     const pixelPanel = useRef<HTMLDivElement | null>(null)
+    const positionMenuRef = useRef<HTMLDivElement | null>(null)
     const [positionMenuOpen, setPositionMenuOpen] = useSwitch(false)
+    useHandleOutsideClick(positionMenuRef,setPositionMenuOpen.off);
     const [positionMenuX, setPositionMenuX] = useState<string>("0")
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+
+        setPositionMenuOpen.off()
+
         const scrollLeft: number = e.currentTarget.scrollLeft
         const panelWidth = pixelPanel.current!.offsetWidth + parseInt(window.getComputedStyle(pixelPanel.current!).marginLeft) + parseInt(window.getComputedStyle(pixelPanel.current!).marginRight)
 
@@ -221,7 +261,14 @@ const PixelCarousel = ({ pixels, activePixel, setActivePixel, setWaitManualPlace
         <div className="pixelCarousel" style={{ display: show ? "block" : "none" }}>
             <div className="scroller" onScroll={handleScroll}>
 
-                {positionMenuOpen && <PositionMenu pixel={pixels[activePixel]} setWaitManualPlacement={setWaitManualPlacement} closeMenu={setPositionMenuOpen.off} x={positionMenuX} />}
+                {positionMenuOpen && 
+                    <PositionMenu 
+                        pixel={pixels[activePixel]} 
+                        setWaitManualPlacement={setWaitManualPlacement} 
+                        closeMenu={setPositionMenuOpen.off} 
+                        x={positionMenuX} 
+                        ref={positionMenuRef}
+                    />}
 
                 <div className="padder"></div>
                 {pixels.map(pixel => (
@@ -262,9 +309,9 @@ const PixelPanel = ({ pixel, activePixel, setActivePixel, ref2, setPositionMenuO
     }
 
     const handleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        //console.log({index:pixel.index,activePixel},pixel.index === activePixel)
-        //if (pixel.index === activePixel) setPositionMenuOpen(); //toggle menu open
-        //else 
+        console.log({index:pixel.index,activePixel},pixel.index === activePixel)
+        if (pixel.index === activePixel) setPositionMenuOpen(); //toggle menu open
+        else 
         setPositionMenuOpen.on(); //always open menu when switching to another pixel
         setPositionMenuX(e.currentTarget.offsetLeft - e.currentTarget.offsetParent!.scrollLeft + (75 / 2) + "px")
     }
@@ -287,12 +334,12 @@ type PositionMenuProps = {
     x: string
 }
 
-const PositionMenu = ({ pixel, setWaitManualPlacement, closeMenu, x }: PositionMenuProps) => {
+const PositionMenu = React.forwardRef(({ pixel, setWaitManualPlacement, closeMenu, x }: PositionMenuProps, ref : React.Ref<HTMLDivElement>) => {
     const dispatch = useDispatch()
-    const worker = useWorker();
+    //const worker = useWorker();
 
     return (
-        <div className="positionMenu" style={{ left: x }}>
+        <div className="positionMenu" style={{ left: x }} ref={ref}>
             {pixel.position && <button onClick={() => dispatch(changePosition(pixel.index, undefined))}>Clear point {pixel.index.toString()}</button>}
 
             {getAlternatives(pixel).map(alt => <button key={alt.label} onClick={() => dispatch(changePosition(pixel.index, { ...alt.position, confidence: 1 }))}>Alt {alt.label} ({Math.round(alt.position.confidence * 100)}%)</button>)}
@@ -301,9 +348,9 @@ const PositionMenu = ({ pixel, setWaitManualPlacement, closeMenu, x }: PositionM
 
             {!pixel.position && <button onClick={() => dispatch(interpolate(pixel.index))}>Interpolate</button>}
 
-            <button onClick={() => worker?.postMessage({ type: "RECALCULATE", code: pixel.code, index: pixel.index })}>Show calculated</button>
+            {/* <button onClick={() => worker?.postMessage({ type: "RECALCULATE", code: pixel.code, index: pixel.index })}>Show calculated</button> */}
 
-            <button onClick={closeMenu}>Close menu</button>
+            {/* <button onClick={closeMenu}>Close menu</button> */}
         </div>
     )
-}
+})
