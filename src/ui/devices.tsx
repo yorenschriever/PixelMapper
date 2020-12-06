@@ -150,15 +150,15 @@ export const CertificateChip = ({ state, device }: CertificateChipProps) => {
 }
 
 const SupportWarnings = () => {
-    const { camera, ble, websocket, worker, wasm } = useBrowserCapabilities();
+    const { camera, ble, websocket, worker, wasm, media } = useBrowserCapabilities();
 
     return <div className="notifications">
-        {camera === false && <div className="warning">Could not find a camera on this device. Capturing is not possible, but you can load states that were made on another device.</div>}
+        {(media === false || camera === false) && <div className="warning">Could not find a camera on this device. Capturing is not possible, but you can load states that were made on another device.</div>}
         {ble === false && <div className="warning">Bluetooth connections are not supported your device.</div>}
         {websocket === false && <div className="warning">Websocket connections are not supported on your device.</div>}
         {(worker === false || wasm === false) && <div className="warning">Processing will not be possible on this device. {camera && "After capturing you can save the state and load it on another device."}</div>}
     
-        {(camera===false || ble===false || websocket===false || worker===false || wasm===false) && <div className="info">Use a recent version of Edge or Chrome to get the best experience.</div>}
+        {(media===false || ble===false || websocket===false || worker===false || wasm===false) && <div className="info">Use a recent version of Edge or Chrome to get the best experience.</div>}
     </div>
 }
 

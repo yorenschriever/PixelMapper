@@ -15,6 +15,8 @@ export const useBrowserCapabilities = () => {
         }
     }, [])
 
+    const media = navigator.mediaDevices && ('enumerateDevices' in navigator.mediaDevices)
+
 
     const [ble, setBle] = useState<boolean | undefined>(undefined);
     useEffect(() => {
@@ -44,5 +46,5 @@ export const useBrowserCapabilities = () => {
 
     const worker = !!window.Worker;
 
-    return { camera, ble, websocket, worker, wasm }
+    return { camera, ble, websocket, worker, wasm, media }
 }
