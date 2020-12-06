@@ -25,6 +25,12 @@ export const loadCaptureState = (state: CaptureState): LoadCaptureStateType => (
     state
 })
 
+export const resetCaptureState = (): LoadCaptureStateType => ({
+    type: 'LOAD_CAPTURE_STATE',
+    state: initialState
+})
+
+
 export const captureReducer = (state: CaptureState = initialState, action: CaptureActionTypes) => {
     switch (action.type) {
         case 'ADD_IMAGES':

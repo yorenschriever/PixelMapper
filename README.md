@@ -124,7 +124,6 @@ You can run the code locally if you want to make changes, add functionality and 
 - **Example pattern** Include an example Arduino sketch that displays a simple mapped pattern, so people can quickly test mapping results on the installation
 - **Include quartz composer example sketch**
 - **Test led button in example sketch** Make the ESP32s button light up all leds. This is useful for debugging your hardware configuration.
-- **Store devices config in localstorage.** It is not  unlikely that the next time you will map the same device
 - **Detect branches in the binary tree that will not end in a code.** This will speed up the solve process for less dense coding schemes
 
 Suggestions and questions are welcome.

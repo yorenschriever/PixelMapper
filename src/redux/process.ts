@@ -44,6 +44,11 @@ export const loadProcessState = (state: ProcessState): LoadProcessStateType => (
     state
 })
 
+export const resetProcessState = (): LoadProcessStateType => ({
+    type: 'LOAD_PROCESS_STATE',
+    state : initialState
+})
+
 export type ChangePositionType = {
     type: 'CHANGE_POSITION'
     index: number

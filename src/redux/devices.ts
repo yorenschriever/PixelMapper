@@ -65,6 +65,11 @@ export const loadDevicesState = (state: DevicesState): LoadDevicesStateType => (
     state
 })
 
+export const resetDevicesState = (): LoadDevicesStateType => ({
+    type: 'LOAD_DEVICES_STATE',
+    state : initialState
+})
+
 export type SetNameType = {
     type: 'SET_NAME'
     name: string

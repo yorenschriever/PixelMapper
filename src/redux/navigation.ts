@@ -19,6 +19,11 @@ export const loadNavigationState = (state:NavigationState):LoadNavigationStateTy
     state
 })
 
+export const resetNavigationState = ():LoadNavigationStateType => ({
+    type: 'LOAD_NAVIGATION_STATE',
+    state: initialState
+})
+
 export const navigationReducer = (state : NavigationState = initialState, action : NavigationActionTypes) => {
     switch (action.type) {
         case 'SET_STEP':
