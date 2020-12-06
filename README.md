@@ -99,7 +99,7 @@ This turned out to be good enough so i stopped looking further. However, the cod
   
 The last point is relevant, because how the images are stacked: I use a binary tree to multiply all images: start with the white image, then create 2 branches: one where I multiply with the positive image, and one with the negative image. Then I repeat the branching until I end up with a stack that represents a code. This makes it very memory and cpu efficient, and solves all codes in O(N log N), where N is the highest code value used. (This is why a dense coding scheme is important).
 
-If you are interested you can see the stacked output image by clicking 'show calculated' in the leds menu. I still find it fascinating so see how this highlights exactly the pixel you are looking for.  
+If you are interested you can see the stacked output image by clicking 'View calculated' in the hamburger menu. I still find it fascinating so see how this highlights exactly the pixel you are looking for.  
   
 ## Make improvements
 You can run the code locally if you want to make changes, add functionality and tweak settings. Pixelmapper is a React project, so getting started is easy:

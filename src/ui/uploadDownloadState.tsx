@@ -4,6 +4,7 @@ import { store } from '..'
 import { loadCaptureState, loadDevicesState, loadNavigationState, resetCaptureState, resetDevicesState, resetNavigationState, State } from '../redux'
 import { loadProcessState, resetProcessState } from '../redux/process'
 import { nameSelector } from '../redux/selectors'
+import { useWorker } from '../worker/useWorker'
 
 export const DownloadStateButton = () => {
     const name = useSelector<State,string>(nameSelector)
@@ -31,12 +32,15 @@ export const DownloadStateButton = () => {
 export const UploadStateButton = () => {
     const dispatch = useDispatch()
     const input = useRef<HTMLInputElement | null>(null)
+    const worker = useWorker();
 
     const uploadState = () => {
         var reader = new FileReader();
         reader.onload = function (e) {
 
             try {
+                worker?.postMessage({ type: "CLEAN" })
+
                 const state = JSON.parse(e.target!.result!.toString()) as State
 
                 //test code to load 20x the data for render stresstesting

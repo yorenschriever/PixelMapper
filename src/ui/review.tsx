@@ -19,34 +19,6 @@ const getAlternatives = (pixel: Pixel) => pixel.alternativePositions.slice(0, 5)
     position: pos
 }))
 
-// type ReviewUIStateType = {
-//     //hamburgerMenuOpen: boolean
-//     pixelMenuOpen: boolean
-//     activePixel: number
-//     showingDebugimg: boolean
-//     manualPlacement: number | undefined
-// }
-
-// type ReviewUIStateAction = {
-//     type: "SHOW_DEBUG_IMG",
-//     value: boolean
-// } | {
-//     type: "SET_ACTIVE_PIXEL" | "MANUAL_PLACEMENT"
-//     value?: number
-// }
-
-// const initialReviewUIState : ReviewUIStateType = {
-//     //hamburgerMenuOpen: false,
-//     pixelMenuOpen: false,
-//     activePixel: 0,
-//     showingDebugimg: false,
-//     manualPlacement: undefined
-// }
-
-// const reviewUIReducer = (state: ReviewUIStateType, action: ReviewUIStateAction) => {
-//     return state
-// }
-
 export const Review = () => {
     const dispatch = useDispatch()
     const [error, setError] = useState<string>("")
@@ -58,6 +30,8 @@ export const Review = () => {
     const [activePixel, setActivePixel] = useState<number>(0)
     const [waitManualPlacement, setWaitManualPlacement] = useState<number | undefined>(undefined)
     const [showingDebugimg, setShowingDebugImg] = useSwitch(false);
+    const displayedDebugImg = useRef<number | undefined>(undefined);
+    const [debugImgIsLoading,setDebugImgIsLoading] = useSwitch(false);
     
     const worker = useWorker();
     const numPixels = useSelector<State, number>(numPixelsSelector)
@@ -65,16 +39,14 @@ export const Review = () => {
     const captureState = useSelector<State, CaptureState>(i => i.captureReducer)
     const crop = useSelector<State, CropType | undefined>(i => i.processReducer.crop)
 
-    //const [{showingDebugimg, manualPlacement, activePixel}, dispatchUI] = useReducer(reviewUIReducer, initialReviewUIState);
-
     const workerMessageHandler = useCallback(async (event: MessageEvent<any>) => {
         switch (event.data.type) {
             case "RECALCULATEIMG":
                 imageDataTocanvas(event.data.img, debugCanvas.current!)
                 const context = debugCanvas.current!.getContext('2d')!
                 getAlternatives(pixels[event.data.index]).forEach(alt => drawPosition(context, alt.position, alt.label, DrawPixelType.Alternative))
-                setShowingDebugImg.on()
-                //dispatchUI({type:'',true})
+                displayedDebugImg.current=event.data.index
+                setDebugImgIsLoading.off()
                 break;
             case "ISINITIALIZEDRESPONSE":
                 if (!event.data.initialized) {
@@ -84,7 +56,15 @@ export const Review = () => {
                 break;
             default:
         }
-    }, [pixels, setShowingDebugImg, worker, captureState, numPixels, encoderType])
+    }, [pixels, worker, captureState, numPixels, encoderType, setDebugImgIsLoading])
+
+    useEffect(() => {
+        if (!showingDebugimg || displayedDebugImg.current===activePixel || debugImgIsLoading)
+            return;
+        const pixel = pixels[activePixel]
+        setDebugImgIsLoading.on();
+        worker?.postMessage({ type: "RECALCULATE", code: pixel.code, index: pixel.index })
+    },[pixels,activePixel, showingDebugimg, worker, debugImgIsLoading, setDebugImgIsLoading])
 
     useEffect(() => {
         if (!worker) return;
@@ -194,13 +174,14 @@ export const Review = () => {
 
     return <>
         <canvas ref={canvas} className="processCanvas" onClick={handleCanvasClick} />
-        <canvas ref={debugCanvas} className="processCanvas" style={{ display: showingDebugimg ? "block" : "none" }} onClick={setShowingDebugImg.off} />
+        <canvas ref={debugCanvas} className="processCanvas" style={{ display: showingDebugimg ? "block" : "none" }} />
 
         {crop && !showingDebugimg && <Crop canvas={canvas} baseImage={baseImage} />}
 
         <div className="notificationsFloating">
             {error && <div className="error">{error}</div>}
             {waitManualPlacement !== undefined && <div className="info">Click to position pixel {waitManualPlacement}</div>}
+            {debugImgIsLoading && <div className="info">Calculating image</div>}
         </div>
 
         <PixelCarousel pixels={pixels} activePixel={activePixel} setActivePixel={setActivePixel} setWaitManualPlacement={setWaitManualPlacement} show={waitManualPlacement === undefined} />
@@ -216,6 +197,11 @@ export const Review = () => {
             {crop ?
                 <button onClick={() => dispatch(setCrop(undefined))}>No crop</button> :
                 <button onClick={() => dispatch(setCrop(calcCrop()))}>Crop</button>
+            }
+
+            {showingDebugimg ?
+                <button onClick={setShowingDebugImg.off}>View picture</button> :
+                <button onClick={setShowingDebugImg.on}>View calculated</button>
             }
 
             <ExportButton type="csv">Export CSV</ExportButton>
