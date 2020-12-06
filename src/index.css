@@ -130,7 +130,7 @@ button {
 .positionMenu {
   position: fixed;
   width: 125px;  
-  bottom: 150px;
+  bottom: 125px;
   transform: translate(-50%, 0)
 }
 

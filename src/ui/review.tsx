@@ -277,7 +277,7 @@ type PixelPanelProps = {
     pixel: Pixel,
     activePixel: number,
     setActivePixel: (index: number) => void
-    setPositionMenuOpen: (() => void) & { on: () => void }
+    setPositionMenuOpen: (() => void) & { on: () => void }& { off: () => void }
     setPositionMenuX: (x: string) => void
     ref2: React.Ref<HTMLDivElement> | undefined
 }
@@ -295,10 +295,12 @@ const PixelPanel = ({ pixel, activePixel, setActivePixel, ref2, setPositionMenuO
     }
 
     const handleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        console.log({index:pixel.index,activePixel},pixel.index === activePixel)
-        if (pixel.index === activePixel) setPositionMenuOpen(); //toggle menu open
-        else 
-        setPositionMenuOpen.on(); //always open menu when switching to another pixel
+        console.log('pixelpanel.click',{index:pixel.index,activePixel},pixel.index === activePixel)
+        //if (pixel.index === activePixel) setPositionMenuOpen.off(); //toggle menu open
+        //else 
+        //setPositionMenuOpen.on(); //always open menu when switching to another pixel
+        
+        setPositionMenuOpen();
         setPositionMenuX(e.currentTarget.offsetLeft - e.currentTarget.offsetParent!.scrollLeft + (75 / 2) + "px")
     }
 
@@ -322,21 +324,16 @@ type PositionMenuProps = {
 
 const PositionMenu = React.forwardRef(({ pixel, setWaitManualPlacement, closeMenu, x }: PositionMenuProps, ref : React.Ref<HTMLDivElement>) => {
     const dispatch = useDispatch()
-    //const worker = useWorker();
 
     return (
         <div className="positionMenu" style={{ left: x }} ref={ref}>
             {pixel.position && <button onClick={() => dispatch(changePosition(pixel.index, undefined))}>Clear point {pixel.index.toString()}</button>}
 
-            {getAlternatives(pixel).map(alt => <button key={alt.label} onClick={() => dispatch(changePosition(pixel.index, { ...alt.position, confidence: 1 }))}>Alt {alt.label} ({Math.round(alt.position.confidence * 100)}%)</button>)}
+            {getAlternatives(pixel).map(alt => <button key={alt.label} onClick={() => dispatch(changePosition(pixel.index, { ...alt.position, confidence: 1 }))}>Match {alt.label} ({Math.round(alt.position.confidence * 100)}%)</button>)}
 
             <button onClick={() => { setWaitManualPlacement(pixel.index); closeMenu() }}>Manual placement</button>
 
             {!pixel.position && <button onClick={() => dispatch(interpolate(pixel.index))}>Interpolate</button>}
-
-            {/* <button onClick={() => worker?.postMessage({ type: "RECALCULATE", code: pixel.code, index: pixel.index })}>Show calculated</button> */}
-
-            {/* <button onClick={closeMenu}>Close menu</button> */}
         </div>
     )
 })
