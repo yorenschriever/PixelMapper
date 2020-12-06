@@ -6,6 +6,9 @@ export class WebsocketConnection implements IConnection {
     listeners: StateListener[] = []
 
     constructor(device: Device) {
+        if (device.hostname==="")
+            return;
+            
         try {
             this.socket = new WebSocket('wss://' + device.hostname + '/map')
         } catch (e) {

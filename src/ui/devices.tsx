@@ -35,8 +35,8 @@ const DevicePanel = ({ device, index }: { device: Device, index: number }) => {
             <div>State</div>
             <div>
                 <ConnectionChip state={state} dirty={editing} />
-                {device.type !== DeviceType.BLE && !editing && <CertificateChip state={state} device={device} />}
-                {state === States.Disconnected && <button style={{ marginLeft: "10px", height: "28px", width: "unset", top: "-2px", position: "relative" }} onClick={reconnect}><span role="img" aria-label="retry">↻</span></button>}
+                {device.type !== DeviceType.BLE && !editing && hostname !== "" && <CertificateChip state={state} device={device} />}
+                {state === States.Disconnected && !editing && hostname !== "" && <button style={{ marginLeft: "10px", height: "28px", width: "unset", top: "-2px", position: "relative" }} onClick={reconnect}><span role="img" aria-label="retry">↻</span></button>}
             </div>
 
             <div>Remove</div>
@@ -79,7 +79,7 @@ export const Devices = () => {
         connection.addStateListener(listener);
     }
 
-    const { camera, ble, websocket} = useBrowserCapabilities();
+    const { camera, ble, websocket } = useBrowserCapabilities();
 
     return <>
         <SupportWarnings />
@@ -98,7 +98,7 @@ export const Devices = () => {
 
             <br />
 
-            <button onClick={() => dispatch(setStep(ActiveStep.Capture))} disabled={!camera || devices.length===0}>Capture &gt;&gt;</button>
+            <button onClick={() => dispatch(setStep(ActiveStep.Capture))} disabled={!camera || devices.length === 0}>Capture &gt;&gt;</button>
 
             <hr />
 
@@ -157,8 +157,8 @@ const SupportWarnings = () => {
         {ble === false && <div className="warning">Bluetooth connections are not supported your device.</div>}
         {websocket === false && <div className="warning">Websocket connections are not supported on your device.</div>}
         {(worker === false || wasm === false) && <div className="warning">Processing will not be possible on this device. {camera && "After capturing you can save the state and load it on another device."}</div>}
-    
-        {(media===false || ble===false || websocket===false || worker===false || wasm===false) && <div className="info">Use a recent version of Edge or Chrome to get the best experience.</div>}
+
+        {(media === false || ble === false || websocket === false || worker === false || wasm === false) && <div className="info">Use a recent version of Edge or Chrome to get the best experience.</div>}
     </div>
 }
 
