@@ -1,3 +1,4 @@
+import useSwitch from '@react-hook/switch'
 import React, { RefObject, useCallback, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { State } from '../redux'
@@ -20,6 +21,8 @@ export const Crop = ({ canvas }: CropProps) => {
     const bottomleft = useRef<HTMLDivElement>(null)
     const bottomright = useRef<HTMLDivElement>(null)
     const cropState = useSelector<State, CropType>(i => i.processReducer.crop!)
+    //this switch changes value when the window resizes. Changing state triggers a rerender of the croppoints in their new position
+    const [, setWindowSized] = useSwitch(); 
 
     const toPageCoordinate = useCallback((x: number, y: number) => {
         if (!canvas.current) return { left: 0, top: 0 };
@@ -88,6 +91,11 @@ export const Crop = ({ canvas }: CropProps) => {
         bottomright.current!.onmousedown = dragMouseDown
         bottomright.current!.ontouchstart = dragMouseDown
     }, [dragMouseDown])
+
+    useEffect(() => {
+        window.addEventListener('resize', setWindowSized);
+        return () => { window.removeEventListener('resize', setWindowSized); }
+    },[setWindowSized])
 
     return <div>
         <div className="cropPoint" data-x="x0" data-y="y0" style={toPageCoordinate(cropState.x0, cropState.y0)} ref={topleft}></div>
