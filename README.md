@@ -47,7 +47,9 @@ This sketch will use bluetooth low energy to receive data from the pixelmapper. 
 The CSV file contains the positions in a coordinate system [-1,1] x [-1,1]. How you can use these positions to display patterns is out of scope of this project. If you are familiar with quartz composer (macos), I got a plugin that will send out your composition to the leds. Let me know if you are interested. You can also export a header (*.h) file if you want to use the positions in one of your Arduino projects directly (still experimental, the format might change)
 
 Pro tip: At any point in the process you can download the current state from the hamburger menu. This is useful if you want to create a backup, continue at a later time, or continue on another device. I found it convenient to download the state after capturing, send it to my desktop and do the review and export on a large monitor. 
-  
+
+Pixelmapper is available offline as progressive web app. This can be useful when working in venues without a reliable internet connection, or when you want to use websocket connections on a network that is not connected to the internet. To install the PWA, open [Pixelmapper](https://yorenschriever.github.io/pixelmapper/) in your browser, open the browsers menu, and select 'Add to home screen'.
+
 ## How does it work?
 It is an old project that I have ported a few times over the years. It started out as a dedicated hardware device based on a Raspberry pi and a camera module. The code was written in cpp and not very flexible. As phones became more powerful, about 5 years ago, i realised that this would be the ideal platform, because they are smaller and easy available. I rewrote it in java in Android studio and created an app out of it. It worked, but was now only available on android, and because i wasn't too familiar with writing native apps, the ui was spartan. Now technology has advanced, I realised it would be possible to do it all in the browser. This would make Pixelmapper available on Android, ios and desktop, without bothering about app stores or installers. 
 
@@ -125,6 +127,5 @@ You can run the code locally if you want to make changes, add functionality and 
 - **Include quartz composer example sketch**
 - **Test led button in example sketch** Make the ESP32s button light up all leds. This is useful for debugging your hardware configuration.
 - **Detect branches in the binary tree that will not end in a code.** This will speed up the solve process for less dense coding schemes
-- **Offline availability.** Make the PWA work offline, so it can be used in venues without an internet connection
 
 Suggestions and questions are welcome.
