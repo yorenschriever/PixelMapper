@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { CompressedImage, Pixel, Position } from "../entities"
+import { CompressedImage, Pixel } from "../entities"
 import { ActiveStep, CaptureState, setStep, State } from "../redux"
 import { initPixels, solvedPixel } from "../redux/process"
 import { compressedImageToCanvas, drawPosition, DrawPixelType, imageDataTocanvas } from "../imageUtils"
@@ -11,6 +11,7 @@ import { encoderTypeSelector, numPixelsSelector } from "../redux/selectors"
 import { createRunMessage } from "../utils"
 import { EncoderType } from "../encoders/encoderFactory"
 import { useBrowserCapabilities } from "../hooks/useBrowserCapabilities"
+import { MessageFromWorkerType } from "../worker/workerMessages"
 
 export const Process = () => {
     const dispatch = useDispatch()
@@ -34,9 +35,7 @@ export const Process = () => {
     const capabilities = useBrowserCapabilities();
     const canprocess = capabilities.worker !== false && capabilities.wasm !== false
 
-    const positionMapper = (data: any): Position | undefined => (data ? { x: data.x, y: data.y, confidence: data.intensity } : undefined)
-
-    const workerMessageHandler = useCallback(async (event: MessageEvent<any>) => {
+    const workerMessageHandler = useCallback(async (event: MessageEvent<MessageFromWorkerType>) => {
         switch (event.data.type) {
             case "DEBUGIMG":
                 console.log('setting debug to canvas', event.data.img)
@@ -45,12 +44,7 @@ export const Process = () => {
                 setShowingDebugImg.on()
                 break;
             case "PIXELRESULT":
-                const pixel: Pixel = {
-                    index: event.data.index,
-                    code: event.data.code,
-                    position: positionMapper(event.data.position),
-                    alternativePositions: event.data.alternativePositions.map(positionMapper)
-                }
+                const pixel: Pixel = event.data
                 console.log('pixel result', pixel)
                 dispatch(solvedPixel(pixel))
                 if (pixel.position)

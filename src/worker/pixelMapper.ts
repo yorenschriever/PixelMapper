@@ -1,12 +1,9 @@
 
-
-
 import { encoderFactory, EncoderType } from "../encoders/encoderFactory"
 import { IEncoder } from "../encoders/IEncoder"
+import { imageDataFromMat } from "./imageDataFromMat";
 import simpleBlobDetector from "./simpleBlobDetector";
-
-//TODOS
-type Listener = any;
+import { MessageFromWorkerType } from "./workerMessages";
 
 export class PixelMapper {
     codedImage : cv.Mat[] = []
@@ -27,10 +24,7 @@ export class PixelMapper {
         labelPoints: true
     }
 
-    //listener : IListener
-
-    constructor(private listener : Listener) {
-        //this.listener = listener
+    constructor(private callback : ((msg: MessageFromWorkerType) => void)) {
         console.log('Pixelmapper constructor')
     }
 
@@ -82,7 +76,7 @@ export class PixelMapper {
         this.sendStatus('Decoding positions')
         this.decodeRecursive(this.startImage, 0, this.numSlices)
 
-        this.listener({
+        this.callback({
             type: 'DONE',
         })
     }
@@ -96,7 +90,7 @@ export class PixelMapper {
 
     sendStatus = (msg: string) => {
         console.log(msg)
-        this.listener({
+        this.callback({
             type: 'STATUS',
             msg
         })
@@ -146,39 +140,34 @@ export class PixelMapper {
     }
 
     detectSinglePixel = (mat: cv.Mat, index:number, code:number) => {
-        //let maxBrightness:number=0
-        //cv.minMaxLoc(mat,null,maxBrightness)
         const maxBrightness = cv.minMaxLoc(mat).maxVal
         //use converTo te rescale the result to a 0-1 range
         mat.convertTo(mat, cv.CV_32FC1, 1.0 / maxBrightness);
 
-        const keypoints:any[] = simpleBlobDetector(mat, this.detectParams)
+        const keypoints = simpleBlobDetector(mat, this.detectParams)
 
         const positions = keypoints.map(kp => ({
             x: kp.pt.x,
             y: kp.pt.y,
             size: kp.size,
-            intensity: mat.floatAt(Math.round(kp.pt.y), Math.round(kp.pt.x)) * maxBrightness
+            confidence: mat.floatAt(Math.round(kp.pt.y), Math.round(kp.pt.x)) * maxBrightness
         }))
-        positions.sort((a, b) => b.intensity - a.intensity)
+        positions.sort((a, b) => b.confidence - a.confidence)
 
         //images with fewer matches turn out to be higher quality. increate the confidence a bit
-        if (positions.length <= 3) positions.forEach(i=>i.intensity = Math.min(1, i.intensity*2));
+        if (positions.length <= 3) positions.forEach(i=>i.confidence = Math.min(1, i.confidence*2));
         //images with one 1 match are likely a valid match, but at low intensity lighting. increase the confidence again
-        if (positions.length == 1) positions.forEach(i=>i.intensity = Math.min(1, i.intensity*2));
+        if (positions.length == 1) positions.forEach(i=>i.confidence = Math.min(1, i.confidence*2));
 
-        const bestCandidate = (positions && positions[0] && positions[0].intensity >= 0.01) ? positions[0] : undefined
+        const bestCandidate = (positions && positions[0] && positions[0].confidence >= 0.01) ? positions[0] : undefined
 
-        const msg = {
+        this.callback({
             type: 'PIXELRESULT',
             index,
             code,
-            isLocated: positions.length > 0,
             position: bestCandidate,
             alternativePositions: positions
-        }
-
-        this.listener(msg)
+        })
     }
 
     recalculate = (code : number, index : number) => {
@@ -194,15 +183,13 @@ export class PixelMapper {
                 cv.multiply(cumuMat, this.codedImageNegative[i], cumuMat)
         }
 
-        //let maxBrightness:number=0
-        //cv.minMaxLoc(cumuMat,null,maxBrightness,null,null,undefined)
         const maxBrightness = cv.minMaxLoc(cumuMat).maxVal
         //use convertTo te rescale the result to a 0-1 range
         cumuMat.convertTo(cumuMat, cv.CV_32FC1, 1.0 / maxBrightness);
 
-        this.listener({
+        this.callback({
             type: 'RECALCULATEIMG',
-            img: cumuMat,
+            img: imageDataFromMat(cumuMat),
             code,
             index
         })
@@ -211,9 +198,9 @@ export class PixelMapper {
     }
 
     debug = (img: cv.Mat, msg:string) => {
-        this.listener({
+        this.callback({
             type: 'DEBUGIMG',
-            img,
+            img: imageDataFromMat(img),
             msg
         })
     }

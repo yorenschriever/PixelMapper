@@ -5,17 +5,39 @@
 // But with special `faster` option which has slightly different semantics,
 // but is a whole bunch faster.
 
-function diff(v1:any, v2:any) {//TODO
-    if (v1.x !== undefined) return { x: v1.x - v2.x, y: v1.y - v2.y };
-    return v1.map((value:any, index:number) => value - v2[index]);//TODO
-}
+const diff = (v1:cv.Point , v2:cv.Point) => ({ x: v1.x - v2.x, y: v1.y - v2.y });
+const norm = (vector:cv.Point) => Math.sqrt([vector.x, vector.y].reduce((sum:number, value:any) => sum + value * value, 0));
 
-function norm(vector:any):any {//TODO
-    if (vector.x !== undefined) return norm([vector.x, vector.y]);
-    return Math.sqrt(vector.reduce((sum:number, value:any) => sum + value * value, 0));//TODO
-}
+export type SimpleBlobDetectorParams = {
+    thresholdStep?: number,
+    minThreshold?: number,
+    maxThreshold?: number,
+    minRepeatability?: number,
+    minDistBetweenBlobs?: number,
 
-const defaultParams = {
+    filterByColor?: boolean,
+    blobColor?: number,
+
+    filterByArea?: boolean,
+    minArea?: number,
+    maxArea?: number,
+
+    filterByCircularity?: boolean,
+    minCircularity?: number,
+    maxCircularity?: number,
+
+    filterByInertia?: boolean,
+    minInertiaRatio?: number,
+    maxInertiaRatio?: number,
+
+    filterByConvexity?: boolean,
+    minConvexity?: number,
+    maxConvexity?: number,
+
+    faster?: boolean,
+};
+
+const defaultParams : SimpleBlobDetectorParams = {
     thresholdStep: 10,
     minThreshold: 50,
     maxThreshold: 220,
@@ -46,8 +68,8 @@ const defaultParams = {
     faster: false,
 };
 
-function findBlobs(image:cv.Mat, binaryImage:cv.Mat, params:any) {//TODO
-    const contours = new cv.MatVector(); //TODO
+function findBlobs(image:cv.Mat, binaryImage:cv.Mat, params:SimpleBlobDetectorParams) {
+    const contours = new cv.MatVector(); 
     const hierarchy = new cv.Mat();
     if (params.faster) {
         cv.findContours(binaryImage, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
@@ -82,13 +104,13 @@ function findBlobs(image:cv.Mat, binaryImage:cv.Mat, params:any) {//TODO
         }
 
         if (params.filterByArea) {
-            if (area < params.minArea || area >= params.maxArea) continue;
+            if (area < params.minArea! || area >= params.maxArea!) continue;
         }
 
         if (params.filterByCircularity) {
             const perimeter = cv.arcLength(contour, true);
             const ratio = 4 * cv.CV_PI * area / (perimeter * perimeter);
-            if (ratio < params.minCircularity || ratio >= params.maxCircularity) continue;
+            if (ratio < params.minCircularity! || ratio >= params.maxCircularity!) continue;
         }
 
         if (params.filterByInertia) {
@@ -119,7 +141,7 @@ function findBlobs(image:cv.Mat, binaryImage:cv.Mat, params:any) {//TODO
                 ratio = 1;
             }
 
-            if (ratio < params.minInertiaRatio || ratio >= params.maxInertiaRatio) continue;
+            if (ratio < params.minInertiaRatio! || ratio >= params.maxInertiaRatio!) continue;
 
             center.confidence = ratio * ratio;
         }
@@ -130,7 +152,7 @@ function findBlobs(image:cv.Mat, binaryImage:cv.Mat, params:any) {//TODO
             const hullArea = cv.contourArea(hull);
             const ratio = area / hullArea;
             hull.delete();
-            if (ratio < params.minConvexity || ratio >= params.maxConvexity) continue;
+            if (ratio < params.minConvexity! || ratio >= params.maxConvexity!) continue;
         }
 
         if (params.filterByColor) {
@@ -159,6 +181,12 @@ function findBlobs(image:cv.Mat, binaryImage:cv.Mat, params:any) {//TODO
     return centers;
 }
 
+type CenterType = {
+    confidence: number
+    location: {x:number, y:number}
+    radius?:number
+}
+
 export default function simpleBlobDetector(image: cv.Mat, params: any) { //TODO
     params = { ...defaultParams, ...params };
 
@@ -171,7 +199,7 @@ export default function simpleBlobDetector(image: cv.Mat, params: any) { //TODO
         cv.cvtColor(image, grayScaleImage, cv.COLOR_RGB2GRAY);
     }
 
-    let centers:any = []; //TODO
+    let centers:CenterType[][] = []; 
     for (
         let thresh = params.minThreshold;
         thresh < params.maxThreshold;
@@ -192,13 +220,13 @@ export default function simpleBlobDetector(image: cv.Mat, params: any) { //TODO
                 );
                 isNew =
                     dist >= params.minDistBetweenBlobs &&
-                    dist >= centers[j][Math.floor(centers[j].length / 2)].radius &&
+                    dist >= (centers[j][Math.floor(centers[j].length / 2)].radius ?? 0) &&
                     dist >= (curCenters[i].radius ?? 0);
                 if (!isNew) {
                     centers[j].push(curCenters[i]);
 
                     let k = centers[j].length - 1;
-                    while (k > 0 && centers[j][k].radius < centers[j][k - 1].radius) {
+                    while (k > 0 && (centers[j][k].radius ?? 0) < (centers[j][k - 1].radius ?? 0)) {
                         centers[j][k] = centers[j][k - 1];
                         k--;
                     }
@@ -225,7 +253,7 @@ export default function simpleBlobDetector(image: cv.Mat, params: any) { //TODO
         }
         sumPoint.x *= 1 / normalizer;
         sumPoint.y *= 1 / normalizer;
-        let size = Math.round(centers[i][Math.floor(centers[i].length / 2)].radius * 2);
+        let size = Math.round((centers[i][Math.floor(centers[i].length / 2)].radius ?? 0) * 2);
         size = Math.min(
             size,
             sumPoint.x * 2,

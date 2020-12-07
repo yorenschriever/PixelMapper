@@ -13,6 +13,7 @@ import { EncoderType } from '../encoders/encoderFactory'
 import { encoderTypeSelector, numPixelsSelector } from '../redux/selectors'
 import { Crop } from './crop'
 import { useHandleOutsideClick } from '../hooks/useHandleOutsideClick'
+import { MessageFromWorkerType } from '../worker/workerMessages'
 
 const getAlternatives = (pixel: Pixel) => pixel.alternativePositions.slice(0, 5).map((pos, index) => ({
     label: String.fromCharCode(index + 65),
@@ -39,7 +40,7 @@ export const Review = () => {
     const captureState = useSelector<State, CaptureState>(i => i.captureReducer)
     const crop = useSelector<State, CropType | undefined>(i => i.processReducer.crop)
 
-    const workerMessageHandler = useCallback(async (event: MessageEvent<any>) => {
+    const workerMessageHandler = useCallback(async (event: MessageEvent<MessageFromWorkerType>) => {
         switch (event.data.type) {
             case "RECALCULATEIMG":
                 imageDataTocanvas(event.data.img, debugCanvas.current!)
