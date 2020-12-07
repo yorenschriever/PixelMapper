@@ -121,7 +121,6 @@ You can run the code locally if you want to make changes, add functionality and 
 - **Make it work without tripod 2: Totally different approach** I do not expect that stabilisation will be able to compensate for larger movements. Find something else.
 - **Asynchronous capture** Encode timing in the images. Now I use relatively large delays to make sure the data is through the pipeline (wifi transmission, Neopixel transmission, camera buffer), The process currently is: set led data, delay 500ms, take photo, repeat, but this can be done faster: Blast frames asynchronously at 30 fps continuously, take a video, and recover everything later. Reducing the capture time like this would also help with stabilisation.  
 - **3d mapping**
-- **Typescript for worker** worker is currently written in javascript.
 - **Change your project name** You cannot change the name anymore after the initial screen. 
 - **Example pattern** Include an example Arduino sketch that displays a simple mapped pattern, so people can quickly test mapping results on the installation
 - **Include quartz composer example sketch**
