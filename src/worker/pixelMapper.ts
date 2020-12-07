@@ -1,13 +1,19 @@
-import simpleBlobDetector from "./simpleBlobDetector"
-import { encoderFactory } from "../encoders/encoderFactory"
-/* global cv */
+
+
+
+import { encoderFactory, EncoderType } from "../encoders/encoderFactory"
+import { IEncoder } from "../encoders/IEncoder"
+import simpleBlobDetector from "./simpleBlobDetector";
+
+//TODOS
+type Listener = any;
 
 export class PixelMapper {
-    codedImage = []
-    codedImageNegative = []
-    startImage
-    encoder
-    initialized = false
+    codedImage : cv.Mat[] = []
+    codedImageNegative: cv.Mat[] = []
+    startImage?: cv.Mat
+    encoder? : IEncoder
+    initialized : boolean = false
 
     numSlices = 0
     numPixels = 0
@@ -19,17 +25,16 @@ export class PixelMapper {
         livePreview: true,
         connectPoints: true,
         labelPoints: true
-
     }
 
-    listener
+    //listener : IListener
 
-    constructor(listener) {
-        this.listener = listener
+    constructor(private listener : Listener) {
+        //this.listener = listener
         console.log('Pixelmapper constructor')
     }
 
-    init = (whiteImage, blackImage, sliceImages, numPixels, encoderType) => {
+    init = (whiteImage: cv.Mat, blackImage: cv.Mat, sliceImages: cv.Mat[], numPixels: number, encoderType: EncoderType) => {
         this.initialized = true
 
         console.log('initializing mapper', { numPixels, encoderType })
@@ -43,7 +48,7 @@ export class PixelMapper {
         if (this.numSlices !== this.encoder.GetCodeLength())
             throw Error('number of images does not match encoder code length')
 
-        let preparedBlackImage = undefined;
+        let preparedBlackImage : cv.Mat | undefined = undefined;
         if (blackImage) {
             this.sendStatus('Preparing black image')
             preparedBlackImage = this.prepareImage(blackImage, undefined, undefined, false)
@@ -66,11 +71,14 @@ export class PixelMapper {
         blackImage.delete()
         whiteImage.delete()
         sliceImages.forEach(i => i.delete())
-        preparedBlackImage.delete()
+        preparedBlackImage?.delete()
 
     }
 
     run = () => {
+        if (!this.initialized || !this.startImage)
+            throw Error('Must initialize before decoding')
+
         this.sendStatus('Decoding positions')
         this.decodeRecursive(this.startImage, 0, this.numSlices)
 
@@ -80,13 +88,13 @@ export class PixelMapper {
     }
 
     clean = () => {
-        this.startImage.delete()
+        this.startImage?.delete()
         this.codedImage.forEach(i => i.delete())
         this.codedImageNegative.forEach(i => i.delete())
         this.initialized = false;
     }
 
-    sendStatus = (msg) => {
+    sendStatus = (msg: string) => {
         console.log(msg)
         this.listener({
             type: 'STATUS',
@@ -94,10 +102,10 @@ export class PixelMapper {
         })
     }
 
-    decodeRecursive = (cumuMat, code, depth) => {
+    decodeRecursive = (cumuMat: cv.Mat, code:number, depth:number) => {
         if (depth === 0) {
             //depth counts down, so the last multiplication step was reached
-            const index = this.encoder.Decode(code)
+            const index = this.encoder!.Decode(code)
             if (index !== undefined && index >= 0 && index < this.numPixels)
                 this.detectSinglePixel(cumuMat, index, code)
 
@@ -112,7 +120,7 @@ export class PixelMapper {
             //mechanism work in such a way that it solves  all 
             //codes from low to high. If we are already past the highest code 
             //we dont have to look further
-            if (code << 1 <= this.encoder.GetHighestCode()) {
+            if (code << 1 <= this.encoder!.GetHighestCode()) {
                 this.decodeRecursive(neg, code << 1, depth - 1)
                 this.decodeRecursive(pos, code << 1 | 1, depth - 1)
             }
@@ -137,13 +145,14 @@ export class PixelMapper {
         faster: true
     }
 
-    detectSinglePixel = (mat, index, code) => {
-
+    detectSinglePixel = (mat: cv.Mat, index:number, code:number) => {
+        //let maxBrightness:number=0
+        //cv.minMaxLoc(mat,null,maxBrightness)
         const maxBrightness = cv.minMaxLoc(mat).maxVal
         //use converTo te rescale the result to a 0-1 range
         mat.convertTo(mat, cv.CV_32FC1, 1.0 / maxBrightness);
 
-        const keypoints = simpleBlobDetector(mat, this.detectParams)
+        const keypoints:any[] = simpleBlobDetector(mat, this.detectParams)
 
         const positions = keypoints.map(kp => ({
             x: kp.pt.x,
@@ -172,7 +181,10 @@ export class PixelMapper {
         this.listener(msg)
     }
 
-    recalculate = (code, index) => {
+    recalculate = (code : number, index : number) => {
+        if (!this.initialized || !this.startImage)
+            return;
+
         const cumuMat = this.startImage.clone()
         for (let i = 0; i < this.numSlices; i++) {
             const sliceValue = (code >> i) & 1;
@@ -182,6 +194,8 @@ export class PixelMapper {
                 cv.multiply(cumuMat, this.codedImageNegative[i], cumuMat)
         }
 
+        //let maxBrightness:number=0
+        //cv.minMaxLoc(cumuMat,null,maxBrightness,null,null,undefined)
         const maxBrightness = cv.minMaxLoc(cumuMat).maxVal
         //use convertTo te rescale the result to a 0-1 range
         cumuMat.convertTo(cumuMat, cv.CV_32FC1, 1.0 / maxBrightness);
@@ -196,7 +210,7 @@ export class PixelMapper {
         cumuMat.delete();
     }
 
-    debug = (img, msg) => {
+    debug = (img: cv.Mat, msg:string) => {
         this.listener({
             type: 'DEBUGIMG',
             img,
@@ -204,13 +218,13 @@ export class PixelMapper {
         })
     }
 
-    invertColors = (pos) => {
+    invertColors = (pos:cv.Mat) => {
         let neg = cv.Mat.ones(pos.size(), cv.CV_32F)
         cv.subtract(neg, pos, neg)
         return neg;
     }
 
-    prepareImage = (input, blackImage, startImage, rescale = false) => {
+    prepareImage = (input:cv.Mat, blackImage?: cv.Mat, startImage?:cv.Mat, rescale = false) => {
         //create our working matrix mat, and load the input image in the correct color space
         let mat = new cv.Mat(input.size(), cv.CV_32F)
         input.convertTo(mat, cv.CV_32F)
@@ -253,7 +267,7 @@ export class PixelMapper {
         return mat
     }
 
-    rescaleSize = (input) => {
+    rescaleSize = (input : cv.Mat) => {
         const inputsize = input.size()
         if (inputsize.width <= this.config.imgWidth)
             //image is already small enough. use current size

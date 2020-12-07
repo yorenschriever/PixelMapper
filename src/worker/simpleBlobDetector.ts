@@ -5,16 +5,14 @@
 // But with special `faster` option which has slightly different semantics,
 // but is a whole bunch faster.
 
-/* global cv */
-
-function diff(v1, v2) {
+function diff(v1:any, v2:any) {//TODO
     if (v1.x !== undefined) return { x: v1.x - v2.x, y: v1.y - v2.y };
-    return v1.map((value, index) => value - v2[index]);
+    return v1.map((value:any, index:number) => value - v2[index]);//TODO
 }
 
-function norm(vector) {
+function norm(vector:any):any {//TODO
     if (vector.x !== undefined) return norm([vector.x, vector.y]);
-    return Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
+    return Math.sqrt(vector.reduce((sum:number, value:any) => sum + value * value, 0));//TODO
 }
 
 const defaultParams = {
@@ -48,8 +46,8 @@ const defaultParams = {
     faster: false,
 };
 
-function findBlobs(image, binaryImage, params) {
-    const contours = new cv.MatVector();
+function findBlobs(image:cv.Mat, binaryImage:cv.Mat, params:any) {//TODO
+    const contours = new cv.MatVector(); //TODO
     const hierarchy = new cv.Mat();
     if (params.faster) {
         cv.findContours(binaryImage, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
@@ -161,7 +159,7 @@ function findBlobs(image, binaryImage, params) {
     return centers;
 }
 
-export default function simpleBlobDetector(image, params) {
+export default function simpleBlobDetector(image: cv.Mat, params: any) { //TODO
     params = { ...defaultParams, ...params };
 
     const grayScaleImage = new cv.Mat(image.rows, image.cols, cv.CV_8UC1);
@@ -173,7 +171,7 @@ export default function simpleBlobDetector(image, params) {
         cv.cvtColor(image, grayScaleImage, cv.COLOR_RGB2GRAY);
     }
 
-    let centers = [];
+    let centers:any = []; //TODO
     for (
         let thresh = params.minThreshold;
         thresh < params.maxThreshold;
@@ -195,7 +193,7 @@ export default function simpleBlobDetector(image, params) {
                 isNew =
                     dist >= params.minDistBetweenBlobs &&
                     dist >= centers[j][Math.floor(centers[j].length / 2)].radius &&
-                    dist >= curCenters[i].radius;
+                    dist >= (curCenters[i].radius ?? 0);
                 if (!isNew) {
                     centers[j].push(curCenters[i]);
 

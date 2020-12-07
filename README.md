@@ -115,7 +115,7 @@ You can run the code locally if you want to make changes, add functionality and 
 ### Open issues, help to improve  
 - **Improve the hybrid phone/desktop interface.** The led menu is trying to be helpful on both types of devices, but arguably this only makes it worse.
 - **UX of initial screen.**  It's an ugly beast
-- **Improve export .h file**  Current format is not well though out
+- **Improve export .h file**  Current format is not well thought out
 - **Use colour channels to reduce number of images**
 - **Make it work without tripod 1: Stabilisation** 
 - **Make it work without tripod 2: Totally different approach** I do not expect that stabilisation will be able to compensate for larger movements. Find something else.

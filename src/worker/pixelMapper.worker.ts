@@ -1,27 +1,32 @@
-/* eslint-disable */
-import { PixelMapper } from "./pixelMapper";
-self.importScripts(`${process.env.PUBLIC_URL}/opencv.js`);
-/* global cv */
 
-const listener = (body) => {
+/* eslint-disable no-restricted-globals */
+
+import { PixelMapper } from "./pixelMapper";
+
+const ctx = self as any;
+ctx.importScripts(`${process.env.PUBLIC_URL}/opencv.js`);
+
+//TODO
+const listener = (body :any) => {
     if (body.img) {
         body.img = imageDataFromMat(body.img)
         //console.log('transformed img data', body)
     }
 
-    postMessage(body)
+    console.log('workler message:',body)
+    ctx.postMessage(body)
 }
 
 const pixelMapper = new PixelMapper(listener)
 
-addEventListener("message", event => {
+ctx.addEventListener("message", (event:MessageEvent<any>) => { //TODO event types
     const body = event.data
     switch (body.type) {
         case "RUN":
             pixelMapper.init(
                 cv.matFromImageData(body.whiteImage),
                 cv.matFromImageData(body.blackImage),
-                body.sliceImages.map(image => cv.matFromImageData(image)),
+                body.sliceImages.map((image:ImageData) => cv.matFromImageData(image)),
                 body.numPixels,
                 body.encoderType
             )
@@ -34,13 +39,13 @@ addEventListener("message", event => {
             pixelMapper.clean()
             break;
         case "ISINITIALIZEDREQUEST":
-            postMessage({ type: 'ISINITIALIZEDRESPONSE', initialized: pixelMapper.initialized })
+            ctx.postMessage({ type: 'ISINITIALIZEDRESPONSE', initialized: pixelMapper.initialized })
             break;
         case "INITONLY":
             pixelMapper.init(
                 cv.matFromImageData(body.whiteImage),
                 cv.matFromImageData(body.blackImage),
-                body.sliceImages.map(image => cv.matFromImageData(image)),
+                body.sliceImages.map((image:ImageData) => cv.matFromImageData(image)),
                 body.numPixels,
                 body.encoderType
             )
@@ -52,7 +57,7 @@ addEventListener("message", event => {
 });
 
 
-function imageDataFromMat(mat) {
+function imageDataFromMat(mat:cv.Mat) {
     // converts the mat type to cv.CV_8U
 
     if (mat.type === cv.CV_32FC1) {
@@ -99,3 +104,6 @@ function imageDataFromMat(mat) {
     img.delete()
     return clampedArray
 }
+
+const test = {}
+export default test
