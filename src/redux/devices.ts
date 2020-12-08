@@ -80,6 +80,16 @@ export const setName = (name: string): SetNameType => ({
     name
 })
 
+export type SetLoadingType = {
+    type: 'SET_LOADING'
+    loading: boolean
+}
+
+export const setLoading = (loading: boolean): SetLoadingType => ({
+    type: 'SET_LOADING',
+    loading
+})
+
 export const devicesReducer = (state: DevicesState = initialState, action: DevicesActionTypes) => {
     switch (action.type) {
         case 'ADD_DEVICE':
@@ -103,22 +113,34 @@ export const devicesReducer = (state: DevicesState = initialState, action: Devic
             return action.state
         case 'SET_NAME':
             return { ...state, name:action.name }
+        case 'SET_LOADING':
+            return { ...state, loading:action.loading }
         default:
             return state
     }
 }
 
-export type DevicesActionTypes = AddDeviceType | UpdateDeviceType | RemoveDeviceType | UpdatePixelCountType | UpdateHostnameType | LoadDevicesStateType | SetNameType
+export type DevicesActionTypes = 
+    AddDeviceType | 
+    UpdateDeviceType | 
+    RemoveDeviceType | 
+    UpdatePixelCountType | 
+    UpdateHostnameType | 
+    LoadDevicesStateType | 
+    SetNameType |
+    SetLoadingType
 
 
 export type DevicesState = {
     devices: Device[]
     name: string;
+    loading:boolean 
 }
 
 const initialState: DevicesState =
 {
     devices: [],
-    name: "pixelmapper"
+    name: "pixelmapper",
+    loading: false
 }
 

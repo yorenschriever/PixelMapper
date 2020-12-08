@@ -9,12 +9,16 @@ import { Concept } from './concept/concept';
 
 function App() {
     const step = useSelector<State, ActiveStep>(state => state.navigationReducer.step)
+    const loading = useSelector<State,boolean>(state=>state.devicesReducer.loading)
     
     //const state = useSelector<State, State>(s => s)
-    //console.log({ state })
+    //console.log({ state ,loading})
 
     if (window.location.href.indexOf("concept")>=0)
         return <Concept/>
+
+    if (loading)
+        return <>Loading</>
 
     switch (step) {
         case ActiveStep.Devices:

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { store } from '..'
-import { loadCaptureState, loadDevicesState, loadNavigationState, resetCaptureState, resetDevicesState, resetNavigationState, State } from '../redux'
+import { loadCaptureState, loadDevicesState, loadNavigationState, resetCaptureState, resetDevicesState, resetNavigationState, setLoading, State } from '../redux'
 import { loadProcessState, resetProcessState } from '../redux/process'
 import { nameSelector } from '../redux/selectors'
 import { useWorker } from '../worker/useWorker'
@@ -46,7 +46,8 @@ export const UploadStateButton = () => {
                 //test code to load 20x the data for render stresstesting
                 //state.processReducer.pixels = Array<Pixel[]>(20).fill(state.processReducer.pixels).flat().map((p,i)=> ({   ...p,index:i,code:i}))
 
-            
+                state.devicesReducer.loading = true;
+                dispatch(setLoading(true))
                 dispatch(loadProcessState(state.processReducer))
                 dispatch(loadCaptureState(state.captureReducer))
                 dispatch(loadDevicesState(state.devicesReducer))
@@ -54,10 +55,14 @@ export const UploadStateButton = () => {
             } catch (error) {
                 console.error('Error loading state', error)
                 alert('Could not read this state.')
+                
+                dispatch(setLoading(true))
                 dispatch(resetProcessState())
                 dispatch(resetCaptureState())
                 dispatch(resetDevicesState())
                 dispatch(resetNavigationState())
+            } finally {
+                dispatch(setLoading(false))
             }
 
         }
