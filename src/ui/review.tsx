@@ -37,6 +37,7 @@ export const Review = () => {
     const worker = useWorker();
     const numPixels = useSelector<State, number>(numPixelsSelector)
     const encoderType = useSelector<State, EncoderType>(encoderTypeSelector)
+    const align = useSelector<State,boolean>(state=>state.captureReducer.align)
     const captureState = useSelector<State, CaptureState>(i => i.captureReducer)
     const crop = useSelector<State, CropType | undefined>(i => i.processReducer.crop)
 
@@ -51,13 +52,13 @@ export const Review = () => {
                 break;
             case "ISINITIALIZEDRESPONSE":
                 if (!event.data.initialized) {
-                    const runmsg = await createRunMessage(captureState, numPixels, encoderType, 'INITONLY')
+                    const runmsg = await createRunMessage(captureState, numPixels, encoderType, align, 'INITONLY')
                     worker?.postMessage(runmsg)
                 }
                 break;
             default:
         }
-    }, [pixels, worker, captureState, numPixels, encoderType, setDebugImgIsLoading])
+    }, [pixels, worker, captureState, numPixels, encoderType, align, setDebugImgIsLoading])
 
     useEffect(() => {
         if (!showingDebugimg || displayedDebugImg.current===activePixel || debugImgIsLoading)

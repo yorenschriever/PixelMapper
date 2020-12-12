@@ -42,7 +42,8 @@ declare namespace cv {
   type Size2l = Size;
   type Rect_ = Rect;
 
-  class MatVector {
+
+  class MatVector{
     delete(): void
     get(i: number): T
     get(i: number, j: number, data: any): T
@@ -99,6 +100,7 @@ declare namespace cv {
   }
 
   function minMaxLoc(mat:Mat): MinMaxLoc
+  function merge(channels: MatVector, result:Mat): void
 
   // expose emscripten / opencv.js specifics
 
@@ -182,7 +184,7 @@ declare namespace cv {
   class KeyPointVector extends Vector<any> { }
   class DMatchVector extends Vector<any> { }
   class DMatchVectorVector extends Vector<Vector<any>> { }
-
+  
   class RectVector extends Rect implements Vector<Rect>{
     get(i: number): Rect
     isAliasOf(...a: any[]): any
@@ -248,6 +250,7 @@ declare namespace cv {
     public roi(expr: Rect | Mat_): Mat
 
     public floatAt(i:number,j:number):number
+    public floatAt(i:number):number
 
     
   }

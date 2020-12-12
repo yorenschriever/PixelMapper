@@ -8,10 +8,11 @@ export type MessageToWorkerType = {
     sliceImages: ImageData[]
     numPixels: number
     encoderType: EncoderType
+    align: boolean
 } | {
     type: "RECALCULATE"
     code: number
-    index:number
+    index: number
 } | {
     type: "ISINITIALIZEDREQUEST"
 } | {
@@ -23,6 +24,7 @@ export type MessageToWorkerType = {
     sliceImages: ImageData[]
     numPixels: number
     encoderType: EncoderType
+    align: boolean
 }
 
 export type MessageFromWorkerType = {
@@ -31,8 +33,8 @@ export type MessageFromWorkerType = {
     msg: string
 } | {
     type: "PIXELRESULT"
-    index:number
-    code:number
+    index: number
+    code: number
     position?: Position
     alternativePositions: Position[]
 } | {
@@ -47,5 +49,5 @@ export type MessageFromWorkerType = {
     type: "RECALCULATEIMG"
     img: ImageData
     code: number
-    index:number
+    index: number
 }

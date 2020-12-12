@@ -1,11 +1,12 @@
 import React, { useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux";
 import { CompressedImage } from "../entities";
-import { ActiveStep, addImages, setStep, State } from "../redux";
+import { ActiveStep, addImages, setAlign, setStep, State } from "../redux";
 import { setPreview } from "../redux/process";
 import { useVideo, useDevices } from "../hooks";
 import { numPixelsSelector, encoderTypeSelector } from "../redux/selectors"
 import { encoderFactory } from "../encoders/encoderFactory"
+import { useMovementDetection } from "../hooks/useMovementDetection";
 
 export const Capture = () => {
     const dispatch = useDispatch()
@@ -17,6 +18,7 @@ export const Capture = () => {
 
     const { setCapturing, setExposure, captureImage, videoRef, cameraReady, capturing } = useVideo()
     const { connectionReady, setAllLeds, sendSlice } = useDevices()
+    const { isMovingNow, hasMoved, resetHasMoved} = useMovementDetection();
 
     const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -27,6 +29,7 @@ export const Capture = () => {
         await setExposure('auto')
         await setAllLeds(true)
         await sleep(1000)
+        resetHasMoved();
         const previewCompressed = captureImage();
 
         console.log("Taking white image")
@@ -49,6 +52,8 @@ export const Capture = () => {
         await sleep(150)
         await setAllLeds(false)
 
+        if (hasMoved)
+            dispatch(setAlign(true))
         dispatch(addImages(white, black, slices))
         dispatch(setPreview(previewCompressed))
         dispatch(setStep(ActiveStep.Process))
@@ -58,6 +63,10 @@ export const Capture = () => {
 
     return <>
         <video ref={videoRef} className="videoPreview" />
+        <div className="notificationsFloating">
+            {isMovingNow && <div className="warning">Camera movement detected. An effort will be made to align the images. For better results use a tripod</div>}
+
+        </div> 
         <button
             onClick={capture}
             className="captureButton"
