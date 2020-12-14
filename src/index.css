@@ -38,7 +38,7 @@ button {
 
 .captureButton {
   position: absolute;
-  left: 25px;
+  right: 25px;
   top: 25px;
   border-radius: 50%;
   height: 50px;
@@ -215,6 +215,7 @@ a.sourcelink {
   border-radius: 5px;
   padding: 3px;
   margin: 5px;
+  max-width: calc(100vw - 100px)
 }
 
 .error {
@@ -230,4 +231,45 @@ a.sourcelink {
 .info {
   border: 1px solid green;
   background-color: #dfd;
+}
+
+.debugCanvasses {
+  position: fixed;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: scroll;
+  height: 100%;
+  width:100%;
+  background-color: black;
+}
+
+.debugCanvas {
+  max-width: 33vw;
+  max-height: 33vw;
+  transition: all 200ms;
+  position: relative;
+}
+
+.debugCanvasZoomed {
+  max-width: 100vw;
+  max-height: 100vw;
+  transition: all 200ms;
+  position: fixed;
+  left:0;
+  top:0;
+  z-index:2;
+}
+
+.debugCanvas span, .debugCanvasZoomed span {
+  color: white;
+  background-color: black;
+  position: absolute;
+  top:2px;
+  left:2px
+}
+
+.debugCanvas canvas, .debugCanvasZoomed canvas {
+  max-width: 100%;
+  max-height: 100%;
+  border:2px solid white
 }

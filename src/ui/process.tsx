@@ -12,6 +12,7 @@ import { createRunMessage } from "../utils"
 import { EncoderType } from "../encoders/encoderFactory"
 import { useBrowserCapabilities } from "../hooks/useBrowserCapabilities"
 import { MessageFromWorkerType } from "../worker/workerMessages"
+import { DebugCanvasses } from "./debugCanvasses"
 
 export const Process = () => {
     const dispatch = useDispatch()
@@ -19,29 +20,28 @@ export const Process = () => {
     const worker = useWorker();
 
     const canvas = useRef<HTMLCanvasElement | null>(null)
-    const debugCanvas = useRef<HTMLCanvasElement | null>(null)
 
     const [error, setError] = useState<string>("")
-    const [status, setStatus] = useState<string>("")
-    const [debug, setDebug] = useState<string>("")
-    const [showingDebugimg, setShowingDebugImg] = useSwitch(false);
+    const [status, setStatus] = useState<string|undefined>()
     const [processing, setProcessing] = useSwitch(false);
 
     const previewImage = useSelector<State, CompressedImage>(state => state.processReducer.preview!)
     const numPixels = useSelector<State, number>(numPixelsSelector)
     const encoderType = useSelector<State, EncoderType>(encoderTypeSelector)
+    const align = useSelector<State,boolean>(state=>state.captureReducer.align)
     const captureState = useSelector<State, CaptureState>(i => i.captureReducer)
 
     const capabilities = useBrowserCapabilities();
     const canprocess = capabilities.worker !== false && capabilities.wasm !== false
 
+    const [debugCanvasses, setDebugCanvasses] = useState<{msg:string,img:ImageData}[]>([])
+    const showingDebugimg = debugCanvasses.length>0
+
     const workerMessageHandler = useCallback(async (event: MessageEvent<MessageFromWorkerType>) => {
         switch (event.data.type) {
             case "DEBUGIMG":
                 console.log('setting debug to canvas', event.data.img)
-                imageDataTocanvas(event.data.img, debugCanvas.current!)
-                setDebug(event.data.msg)
-                setShowingDebugImg.on()
+                setDebugCanvasses([...debugCanvasses, {msg:event.data.msg, img:event.data.img}])
                 break;
             case "PIXELRESULT":
                 const pixel: Pixel = event.data
@@ -56,10 +56,11 @@ export const Process = () => {
             case "DONE":
                 if (!showingDebugimg)
                     dispatch(setStep(ActiveStep.Review))
+                setStatus(undefined)
                 break;
             default:
         }
-    }, [dispatch, setShowingDebugImg, showingDebugimg])
+    }, [dispatch, showingDebugimg,debugCanvasses])
 
     const attachWorker = useCallback(async () => {
         if (!worker) return;
@@ -70,10 +71,10 @@ export const Process = () => {
         worker.onmessage = workerMessageHandler
 
         if (!processing)
-            worker.postMessage(await createRunMessage(captureState, numPixels, encoderType, 'RUN'))
+            worker.postMessage(await createRunMessage(captureState, numPixels, encoderType, align, 'RUN'))
         setProcessing.on()
 
-    }, [setError, workerMessageHandler, processing, setProcessing, captureState, numPixels, encoderType, worker])
+    }, [setError, workerMessageHandler, processing, setProcessing, captureState, numPixels, encoderType, align, worker])
 
     useEffect(() => {
         if (!canprocess) return;
@@ -100,12 +101,12 @@ export const Process = () => {
 
     return <>
         <canvas ref={canvas} className="processCanvas" />
-        <canvas ref={debugCanvas} className="processCanvas" style={{ display: showingDebugimg ? "block" : "none" }} />
+
+        {showingDebugimg && <DebugCanvasses data={debugCanvasses}/>}
 
         <div className="notificationsFloating">
             {status && <div className="info">{status}</div>}
             {error && <div className="error">{error}</div>}
-            {debug && <div className="info">{debug}</div>}
         </div>
 
         <BurgerMenu />

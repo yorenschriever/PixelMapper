@@ -19,7 +19,8 @@ ctx.addEventListener("message", (event:MessageEvent<MessageToWorkerType>) => {
                 cv.matFromImageData(body.blackImage),
                 body.sliceImages.map((image:ImageData) => cv.matFromImageData(image)),
                 body.numPixels,
-                body.encoderType
+                body.encoderType,
+                body.align
             )
             pixelMapper.run()
             break;
@@ -38,7 +39,8 @@ ctx.addEventListener("message", (event:MessageEvent<MessageToWorkerType>) => {
                 cv.matFromImageData(body.blackImage),
                 body.sliceImages.map((image:ImageData) => cv.matFromImageData(image)),
                 body.numPixels,
-                body.encoderType
+                body.encoderType,
+                body.align
             )
             break;
         default:

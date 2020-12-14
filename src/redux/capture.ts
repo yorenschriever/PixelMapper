@@ -30,6 +30,15 @@ export const resetCaptureState = (): LoadCaptureStateType => ({
     state: initialState
 })
 
+export type SetAlignType = {
+    type: 'SET_ALIGN'
+    align: boolean
+}
+
+export const setAlign = (align: boolean): SetAlignType => ({
+    type: 'SET_ALIGN',
+    align
+})
 
 export const captureReducer = (state: CaptureState = initialState, action: CaptureActionTypes) => {
     switch (action.type) {
@@ -42,12 +51,14 @@ export const captureReducer = (state: CaptureState = initialState, action: Captu
             }
         case 'LOAD_CAPTURE_STATE':
             return action.state
+        case 'SET_ALIGN':
+            return {...state, align: action.align}
         default:
             return state
     }
 }
 
-export type CaptureActionTypes = AddImagesType | LoadCaptureStateType
+export type CaptureActionTypes = AddImagesType | LoadCaptureStateType | SetAlignType
 
 
 export type CaptureState = {
@@ -55,6 +66,7 @@ export type CaptureState = {
     whiteImage?: CompressedImage
     images: CompressedImage[]
     encoderType: string
+    align: boolean
 }
 
 const initialState: CaptureState =
@@ -62,5 +74,6 @@ const initialState: CaptureState =
     blackImage: undefined,
     whiteImage: undefined,
     images: [],
-    encoderType: EncoderType.Balanced
+    encoderType: EncoderType.Balanced,
+    align: false
 }
