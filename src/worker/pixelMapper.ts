@@ -42,6 +42,30 @@ export class PixelMapper {
         if (this.numSlices !== this.encoder.GetCodeLength())
             throw Error('number of images does not match encoder code length')
 
+        let newSlices : cv.Mat[] = []
+        const rgb = true;
+        if (rgb) {
+            sliceImages.forEach(slice => {
+                let channels:cv.Mat[] = [new cv.Mat(), new cv.Mat(), new cv.Mat()]
+                cv.split(slice, channels); 
+                let minimum = new cv.Mat();
+                cv.min(channels[0],channels[1], minimum)
+                cv.min(channels[2],minimum,minimum)
+
+                cv.subtract(channels[0],minimum,channels[0])
+                cv.subtract(channels[1],minimum,channels[1])
+                cv.subtract(channels[2],minimum,channels[2])
+                newSlices.push(channels[0])
+                newSlices.push(channels[1])
+                newSlices.push(channels[2])
+                slice.delete();
+            })
+        } else {
+            newSlices = sliceImages
+        }
+
+
+
         let preparedBlackImage : cv.Mat | undefined = undefined;
         if (blackImage) {
             this.sendStatus('Preparing black image')
