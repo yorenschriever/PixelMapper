@@ -27,33 +27,35 @@ export const Capture = () => {
 
         console.log("Taking preview image")
         await setExposure('auto')
-        await setAllLeds(true)
+        //await setAllLeds(true)
         await sleep(1000)
         resetHasMoved();
         const previewCompressed = captureImage();
 
         console.log("Taking white image")
         await setExposure('dark')
-        await sleep(1000)
+        //await sleep(1000)
+        await sleep(333)
         const white = captureImage()
 
-        console.log("Taking black image")
-        await setAllLeds(false)
-        await sleep(3 * 150)
+        // console.log("Taking black image")
+        // await setAllLeds(false)
+        // await sleep(3 * 150)
         const black = captureImage()
 
         const slices: CompressedImage[] = []
-        for (let i = 0; i < numSlices; i++) {
-            await sendSlice(i, encoder)
-            await sleep(3 * 150)
+        for (let i = 0; i < Math.ceil(numSlices/3); i++) {
+            //await sendSlice(i, encoder)
+            //await sleep(3 * 150)
+            await sleep(333)
             slices.push(captureImage())
         }
 
-        await sleep(150)
-        await setAllLeds(false)
+        //await sleep(150)
+        //await setAllLeds(false)
 
-        if (hasMoved)
-            dispatch(setAlign(true))
+        //if (hasMoved)
+        //    dispatch(setAlign(true))
         dispatch(addImages(white, black, slices))
         dispatch(setPreview(previewCompressed))
         dispatch(setStep(ActiveStep.Process))
@@ -70,7 +72,7 @@ export const Capture = () => {
         <button
             onClick={capture}
             className="captureButton"
-            disabled={!cameraReady || !connectionReady || capturing}
+            //disabled={!cameraReady || !connectionReady || capturing}
         >
             Go
         </button>

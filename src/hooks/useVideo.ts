@@ -6,6 +6,7 @@ export const useVideo = () => {
     const imagedimension = useRef<{ w: number, h: number } | null>(null)
     const videoRef = useRef<HTMLVideoElement | null>(null)
     const track = useRef<MediaStreamTrack | null>(null)
+    const capture = useRef<ImageCapture | null>(null)
 
     const [capturing, setCapturing] = useState(false)
     const [cameraReady, setCameraReady] = useState(!!track.current)
@@ -39,7 +40,10 @@ export const useVideo = () => {
                     h: settings.height!
                 }
 
+                capture.current = new ImageCapture(track.current)
+
                 setCameraReady(true)
+                setExposure("dark") //test mode
             })
         })
 
@@ -53,8 +57,80 @@ export const useVideo = () => {
         if (mode === "auto")
             track.current!.applyConstraints({ advanced: [{ exposureMode: "continuous", exposureCompensation: 0 }] })
         else if (mode === "dark")
-            track.current!.applyConstraints({ advanced: [{ exposureMode: "manual", exposureCompensation: -2 }] })
+
+            console.log('dark',track.current!.getConstraints(), track.current?.getCapabilities())
+
+            //track.current?.applyConstraints
+
+            const constraints = {
+                exposureMode: "manual", 
+                iso: 50,
+                //exposureTime: 10,
+                
+            }
+
+            track.current!.applyConstraints({ 
+                ...constraints,
+                advanced: [constraints]
+            })
+
+            // track.current!.applyConstraints({ 
+            //     //whiteBalanceMode:
+
+            //     // exposureMode: "manual", 
+            //     // exposureCompensation: -2,
+            //     // iso: 50,
+            //     // colorTemperature: 9100,
+            //     // autoGainControl: false,
+            //     // frameRate: 30,
+            //     // focusDistance: 3,
+            //     // whiteBalanceMode: "manual",
+
+            //     // exposureMode: "manual", 
+            //     // //exposureCompensation: -2,
+            //     // iso: 50,
+            //     // colorTemperature: 7000,
+            //     // // autoGainControl: false,
+            //     // //frameRate: 30,
+            //     // focusDistance: .5,
+            //     // whiteBalanceMode: "manual",
+            //     // exposureTime: 30,
+
+            //     // exposureMode: "continuous", 
+            //     // // // //exposureCompensation: -2,
+            //     // iso: 500,
+            //     // // // colorTemperature: 7000,
+            //     // // // //autoGainControl: false,
+            //     // // // //frameRate: 30,
+            //     // // // focusDistance: .5,
+            //     // // // whiteBalanceMode: "manual",
+            //     // exposureTime: 400,
+            //     // // pointsOfInterest: [{x:0,y:0}],
+
+            //     advanced: [{ 
+            //         //exposureMode: "continuous",
+            //         exposureMode: "manual", 
+            //         //exposureCompensation: +2,
+            //         //iso: 100,
+            //         //colorTemperature: 7000,
+            //         //autoGainControl: true,
+            //         //frameRate: 30,
+            //         //focusDistance: .5,
+            //         //whiteBalanceMode: "manual",
+            //         exposureTime: 1000,
+            //         //pointsOfInterest: [{x:0,y:0}]
+            //     }] 
+            //} as any)
+            .then(
+                () => console.log('set values',
+                navigator.mediaDevices.getSupportedConstraints(),
+                track.current!.getConstraints(), 
+                track.current?.getCapabilities()
+                )
+            )
     }
+
+    const takePhoto = () => capture.current!.takePhoto()
 
     return {
         setCapturing,
@@ -62,6 +138,7 @@ export const useVideo = () => {
         captureImage,
         videoRef,
         cameraReady,
-        capturing
+        capturing,
+        takePhoto
     }
 }

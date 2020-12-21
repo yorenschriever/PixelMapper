@@ -1,6 +1,8 @@
 
+import { parse } from "path";
 import { encoderFactory, EncoderType } from "../encoders/encoderFactory"
 import { IEncoder } from "../encoders/IEncoder"
+import { compressedImageToCanvas } from "../imageUtils";
 import { imageDataFromMat } from "./imageDataFromMat";
 import simpleBlobDetector from "./simpleBlobDetector";
 import { MessageFromWorkerType } from "./workerMessages";
@@ -8,7 +10,7 @@ import { MessageFromWorkerType } from "./workerMessages";
 export class PixelMapper {
     codedImage: cv.Mat[] = []
     codedImageNegative: cv.Mat[] = []
-    startImage?: cv.Mat
+    //startImage?: cv.Mat
     encoder?: IEncoder
     initialized: boolean = false
 
@@ -39,25 +41,30 @@ export class PixelMapper {
         this.numPixels = numPixels
         this.numSlices = sliceImages.length
 
-        if (this.numSlices !== this.encoder.GetCodeLength())
-            throw Error('number of images does not match encoder code length')
+        //TODO re enable
+        //if (this.numSlices !== this.encoder.GetCodeLength())
+        //    throw Error('number of images does not match encoder code length')
 
         let newSlices : cv.Mat[] = []
         const rgb = true;
         if (rgb) {
-            sliceImages.forEach(slice => {
-                let channels:cv.Mat[] = [new cv.Mat(), new cv.Mat(), new cv.Mat()]
+            sliceImages.forEach((slice,index) => {
+                //let channels:cv.Mat[] = [new cv.Mat(), new cv.Mat(), new cv.Mat()]
+                let channels = new cv.MatVector()
                 cv.split(slice, channels); 
                 let minimum = new cv.Mat();
-                cv.min(channels[0],channels[1], minimum)
-                cv.min(channels[2],minimum,minimum)
+                cv.min(channels.get(0),channels.get(1), minimum)
+                cv.min(channels.get(2),minimum,minimum)
 
-                cv.subtract(channels[0],minimum,channels[0])
-                cv.subtract(channels[1],minimum,channels[1])
-                cv.subtract(channels[2],minimum,channels[2])
-                newSlices.push(channels[0])
-                newSlices.push(channels[1])
-                newSlices.push(channels[2])
+                cv.subtract(channels.get(0),minimum,channels.get(0))
+                //this.debug(channels.get(0),`R ${index}`)
+                cv.subtract(channels.get(1),minimum,channels.get(1))
+                //this.debug(channels.get(1),`G ${index}`)
+                cv.subtract(channels.get(2),minimum,channels.get(2))
+                //this.debug(channels.get(2),`B ${index}`)
+                newSlices.push(channels.get(0))
+                newSlices.push(channels.get(1))
+                newSlices.push(channels.get(2))
                 slice.delete();
             })
         } else {
@@ -65,43 +72,47 @@ export class PixelMapper {
         }
 
 
-        this.config.align = align || true
+        this.config.align = false //align || true
         const alignTo = this.config.align ? this.convertColorAndResize(whiteImage) : undefined
 
         let preparedBlackImage: cv.Mat | undefined = undefined;
-        if (blackImage) {
-            this.sendStatus('Preparing black image')
-            preparedBlackImage = this.prepareImage(blackImage, undefined, alignTo, false)
-        }
+        // if (false &&blackImage) {
+        //     this.sendStatus('Preparing black image')
+        //     preparedBlackImage = this.prepareImage(blackImage, undefined, alignTo, false)
+        // }
 
-        this.sendStatus('Preparing start image')
-        this.startImage = this.prepareImage(whiteImage, preparedBlackImage, alignTo, true)
+        //this.sendStatus('Preparing start image')
+        //this.startImage = this.prepareImage(whiteImage, preparedBlackImage, alignTo, true)
 
         this.sendStatus('Processing slice images')
         this.codedImage = []
         this.codedImageNegative = []
-        sliceImages.forEach(image => {
+        newSlices.forEach(image => {
             const prepared = this.prepareImage(image, preparedBlackImage, alignTo, true)
             this.codedImage.push(prepared)
             this.codedImageNegative.push(this.invertColors(prepared))
         })
 
+        //this.codedImage.forEach(cimg => this.debug(cimg,"codedimage"))
+
         //this.debug(whiteImage,'neg 0')
 
         blackImage.delete()
         whiteImage.delete()
-        sliceImages.forEach(i => i.delete())
-        preparedBlackImage?.delete()
+        newSlices.forEach(i => i.delete())
+        //preparedBlackImage?.delete()
         alignTo?.delete()
 
     }
 
     run = () => {
-        if (!this.initialized || !this.startImage)
+        if (!this.initialized) // || !this.startImage)
             throw Error('Must initialize before decoding')
 
         this.sendStatus('Decoding positions')
-        this.decodeRecursive(this.startImage, 0, this.numSlices)
+        console.log({numSlices: this.numSlices, numPixels: this.numPixels})
+        const startImage = cv.Mat.ones(this.codedImage[0].size(),this.codedImage[0].type()) //TODO solve this in decoderecursive to save 1 multiplication
+        this.decodeRecursive(startImage, 0, this.codedImage.length)
 
         this.callback({
             type: 'DONE',
@@ -109,7 +120,7 @@ export class PixelMapper {
     }
 
     clean = () => {
-        this.startImage?.delete()
+        //this.startImage?.delete()
         this.codedImage.forEach(i => i.delete())
         this.codedImageNegative.forEach(i => i.delete())
         this.initialized = false;
@@ -122,6 +133,8 @@ export class PixelMapper {
             msg
         })
     }
+
+
 
     decodeRecursive = (cumuMat: cv.Mat, code: number, depth: number) => {
         if (depth === 0) {
@@ -141,10 +154,10 @@ export class PixelMapper {
             //mechanism work in such a way that it solves  all 
             //codes from low to high. If we are already past the highest code 
             //we dont have to look further
-            if (code << 1 <= this.encoder!.GetHighestCode()) {
+            //if (code << 1 <= this.encoder!.GetHighestCode()) {
                 this.decodeRecursive(neg, code << 1, depth - 1)
                 this.decodeRecursive(pos, code << 1 | 1, depth - 1)
-            }
+            //}
 
             pos.delete()
             neg.delete()
@@ -197,11 +210,12 @@ export class PixelMapper {
     }
 
     recalculate = (code: number, index: number) => {
-        if (!this.initialized || !this.startImage)
+        if (!this.initialized) // || !this.startImage)
             return;
 
-        const cumuMat = this.startImage.clone()
-        for (let i = 0; i < this.numSlices; i++) {
+        //const cumuMat = this.startImage.clone()
+        const cumuMat = (code & 1) ? this.codedImage[0].clone() : this.codedImageNegative[0].clone()
+        for (let i = 1; i < this.numSlices; i++) {
             const sliceValue = (code >> i) & 1;
             if (sliceValue)
                 cv.multiply(cumuMat, this.codedImage[i], cumuMat)
@@ -240,7 +254,7 @@ export class PixelMapper {
     convertColor = (input: cv.Mat) => {
         let mat = new cv.Mat(input.size(), cv.CV_32F)
         input.convertTo(mat, cv.CV_32F)
-        cv.cvtColor(mat, mat, cv.COLOR_RGB2GRAY)
+        //cv.cvtColor(mat, mat, cv.COLOR_RGB2GRAY)
         return mat
     }
 

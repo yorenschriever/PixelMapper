@@ -139,7 +139,11 @@ export type DevicesState = {
 
 const initialState: DevicesState =
 {
-    devices: [],
+    devices: [{
+        hostname:"test",
+        pixelCount:50,
+        type: DeviceType.Websocket
+    }],
     name: "pixelmapper",
     loading: false
 }

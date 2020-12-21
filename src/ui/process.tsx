@@ -40,7 +40,7 @@ export const Process = () => {
     const workerMessageHandler = useCallback(async (event: MessageEvent<MessageFromWorkerType>) => {
         switch (event.data.type) {
             case "DEBUGIMG":
-                console.log('setting debug to canvas', event.data.img)
+                console.log('setting debug to canvas', event.data.img, event.data.msg)
                 setDebugCanvasses([...debugCanvasses, {msg:event.data.msg, img:event.data.img}])
                 break;
             case "PIXELRESULT":

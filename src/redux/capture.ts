@@ -74,6 +74,6 @@ const initialState: CaptureState =
     blackImage: undefined,
     whiteImage: undefined,
     images: [],
-    encoderType: EncoderType.Balanced,
+    encoderType: EncoderType.RGB,
     align: false
 }
