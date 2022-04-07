@@ -45,37 +45,46 @@ export const ExportButton = ({ children, type='csv'}: ExportButtonProps) => {
     }
 
     const HeaderContent = () => {
-        const scale = 1000;
-        const positionToString = (pos: Position) => `${Math.round(pos.x*scale)},${Math.round(pos.y*scale)}`
+        const positionToString = (pos: Position) => `{x: ${pos.x}, y: ${pos.y}}`
         return `
-        #pragma once
-        #include <inttypes.h>
+#pragma once
 
-        namespace pixelmapper
-        {
-        
-            const int pixelCount = ${pixelCount};
-            const int deviceCount = ${devices.length};
+#include <inttypes.h>
+#include <vector>
 
-            //coordinate system:
-            //(0,0) = center
-            //(-${scale},-${scale}) = top left
-            //(${scale},${scale}) = bottom right
-            const int16_t scale = ${scale};
-        
-            ${devices.map((device, index) => {
-                const pixelStart = devices.slice(0, index).map(d => d.pixelCount).reduce((a, b) => a + b, 0);
-                const pixelsInDevice = pixels.slice(pixelStart, pixelStart + device.pixelCount)
-    
-                return `
-                //device${index} = ${device.hostname}
-                const int device${index}Count = ${device.pixelCount};
-                //x0,y0,  x1,y1,  x2,y2,  etc
-                const int16_t device${index}Positions[${device.pixelCount * 2}] = { ${pixelsInDevice.map(pixel => positionToString(transformPosition(pixel.position))).join(",  ") } };
-                \n`
-            })}  
-        } 
-        \n`
+namespace PixelMapper
+{
+
+    struct PixelPosition
+    {
+        float x;
+        float y;
+    };
+
+    typedef std::vector<PixelPosition> PixelMap;
+
+    //coordinate system:
+    //(0,0) = center
+    //(-1,-1) = top left
+    //(1,1) = bottom right
+
+    const int pixelCount = ${pixelCount};
+    const int deviceCount = ${devices.length};
+
+    ${devices.map((device, index) => {
+        const pixelStart = devices.slice(0, index).map(d => d.pixelCount).reduce((a, b) => a + b, 0);
+        const pixelsInDevice = pixels.slice(pixelStart, pixelStart + device.pixelCount)
+
+        return `
+    //device${index} = ${device.hostname}
+    PixelMap device${index} = {
+        ${pixelsInDevice.map(pixel => positionToString(transformPosition(pixel.position))).join(", \n        ")}
+    };
+
+    \n`;
+    })}  
+} 
+\n`
     }
 
     const handleExportClick = () => {
