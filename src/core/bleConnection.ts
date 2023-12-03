@@ -34,6 +34,7 @@ export class BLEConnection implements IConnection {
         try {
             bledevice = await navigator.bluetooth.requestDevice({ filters });
         } catch (error) {
+            if (!(error instanceof Error)) return;
             console.log('No ble device received. User could have canceled' + error.message)
             return;
         }

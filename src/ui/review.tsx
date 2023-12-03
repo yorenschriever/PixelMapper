@@ -171,7 +171,7 @@ export const Review = () => {
         console.log('total confidence', pixels.map(i => i.position?.confidence || 0).reduce((a, b) => a + b, 0))
     }
 
-    useEffect(logStats, [])
+    useEffect(logStats, [pixels])
 
     return <>
         <canvas ref={canvas} className="processCanvas" onClick={handleCanvasClick} />

@@ -116,7 +116,7 @@ export class PixelMapper {
             //we dont have to look further
             if (code << 1 <= this.encoder!.GetHighestCode()) {
                 this.decodeRecursive(neg, code << 1, depth - 1)
-                this.decodeRecursive(pos, code << 1 | 1, depth - 1)
+                this.decodeRecursive(pos, (code << 1) | 1, depth - 1)
             }
 
             pos.delete()
@@ -157,7 +157,7 @@ export class PixelMapper {
         //images with fewer matches turn out to be higher quality. increate the confidence a bit
         if (positions.length <= 3) positions.forEach(i=>i.confidence = Math.min(1, i.confidence*2));
         //images with one 1 match are likely a valid match, but at low intensity lighting. increase the confidence again
-        if (positions.length == 1) positions.forEach(i=>i.confidence = Math.min(1, i.confidence*2));
+        if (positions.length === 1) positions.forEach(i=>i.confidence = Math.min(1, i.confidence*2));
 
         const bestCandidate = (positions && positions[0] && positions[0].confidence >= 0.01) ? positions[0] : undefined
 

@@ -85,7 +85,7 @@ function findBlobs(image:cv.Mat, binaryImage:cv.Mat, params:SimpleBlobDetectorPa
         objectsToDelete.push(contour);
         const area = cv.contourArea(contour);
 
-        if (area == 0) continue;
+        if (area === 0) continue;
 
         let center, moms;
         if (params.faster) {
@@ -157,7 +157,7 @@ function findBlobs(image:cv.Mat, binaryImage:cv.Mat, params:SimpleBlobDetectorPa
 
         if (params.filterByColor) {
             if (
-                binaryImage.ucharAt(Math.round(center.location.y), Math.round(center.location.x)) !=
+                binaryImage.ucharAt(Math.round(center.location.y), Math.round(center.location.x)) !==
                 params.blobColor
             )
                 continue;
