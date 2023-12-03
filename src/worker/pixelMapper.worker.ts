@@ -5,7 +5,11 @@ import { PixelMapper } from "./pixelMapper";
 import { MessageFromWorkerType, MessageToWorkerType } from "./workerMessages";
 
 const ctx = self as any;
-ctx.importScripts(`${process.env.PUBLIC_URL}/opencv.js`);
+ctx.importScripts(`opencv_js.js`);
+
+//@ts-ignore
+cv = (await cv());
+
 const postMessage = (msg: MessageFromWorkerType) => ctx.postMessage(msg);
 
 const pixelMapper = new PixelMapper(postMessage)
