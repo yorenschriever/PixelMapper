@@ -206,7 +206,7 @@ export const Review = () => {
             }
 
             <ExportButton type="csv">Export CSV</ExportButton>
-            <ExportButton type="h">Export .h</ExportButton>
+            <ExportButton type="h">Export .hpp</ExportButton>
         </BurgerMenu>
     </>
 }

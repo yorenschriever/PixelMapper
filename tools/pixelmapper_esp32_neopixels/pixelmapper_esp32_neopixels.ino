@@ -89,7 +89,7 @@ void setup()
   ResourceNode *node404 = new ResourceNode("", "GET", &handle404);
 
   secureServer.registerNode(nodeRoot);
-  WebsocketNode *chatNode = new WebsocketNode("/map", &MapServiceHandler::create);
+  WebsocketNode *chatNode = new WebsocketNode("/ws/map", &MapServiceHandler::create);
   secureServer.registerNode(chatNode);
   secureServer.setDefaultNode(node404);
 

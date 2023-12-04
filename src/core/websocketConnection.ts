@@ -10,7 +10,7 @@ export class WebsocketConnection implements IConnection {
             return;
             
         try {
-            this.socket = new WebSocket('wss://' + device.hostname + '/map')
+            this.socket = new WebSocket('wss://' + device.hostname + '/ws/map')
         } catch (e) {
             return;
         }
@@ -41,7 +41,7 @@ export class WebsocketConnection implements IConnection {
 
     sendData = (values: boolean[]) => {
         if (this.getState() !== States.Connected)
-            throw Error('WebsocketDevice cannot set data, because it is is state ' + this.getState());
+            throw Error('WebsocketDevice cannot set data, because it is in state ' + this.getState());
         this.socket!.send(new Uint8Array(values.map(i => i ? 255 : 0)))
 
         return new Promise<void>((acc) => {

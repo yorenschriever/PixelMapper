@@ -28,7 +28,9 @@ export const useVideo = () => {
             }, audio: false,
         }).then(function (stream) {
             videoRef.current!.srcObject = stream;
-            videoRef.current!.play();
+            videoRef.current!.play().catch(
+                err => console.error('Error playing video',err)
+            );
 
             videoRef.current!.addEventListener('loadedmetadata', e => {
 
@@ -50,10 +52,12 @@ export const useVideo = () => {
 
     const captureImage = () => videoToCompressedImage(videoRef.current!, imagedimension.current!.w, imagedimension.current!.h);
     const setExposure = (mode: "auto" | "dark") => {
+        let result;
         if (mode === "auto")
-            track.current!.applyConstraints({ advanced: [{ exposureMode: "continuous", exposureCompensation: 0 }] })
+            result = track.current!.applyConstraints({ advanced: [{ exposureMode: "continuous", exposureCompensation: 0 }] })
         else if (mode === "dark")
-            track.current!.applyConstraints({ advanced: [{ exposureMode: "manual", exposureCompensation: -2 }] })
+            result = track.current!.applyConstraints({ advanced: [{ exposureMode: "manual", exposureCompensation: -2 }] })
+        result?.catch(err => console.info('Error setting exposure',err))
     }
 
     return {

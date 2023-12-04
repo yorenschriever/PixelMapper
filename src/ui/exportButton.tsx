@@ -45,31 +45,17 @@ export const ExportButton = ({ children, type='csv'}: ExportButtonProps) => {
     }
 
     const HeaderContent = () => {
-        const positionToString = (pos: Position) => `{x: ${pos.x}, y: ${pos.y}}`
+        const positionToString = (pos: Position) => `{.x= ${pos.x}, .y= ${pos.y}}`
         return `
 #pragma once
 
-#include <inttypes.h>
-#include <vector>
+// coordinate system:
+// (0,0) = center
+// (-1,-1) = top left
+// (1,1) = bottom right
 
 namespace PixelMapper
 {
-
-    struct PixelPosition
-    {
-        float x;
-        float y;
-    };
-
-    typedef std::vector<PixelPosition> PixelMap;
-
-    //coordinate system:
-    //(0,0) = center
-    //(-1,-1) = top left
-    //(1,1) = bottom right
-
-    const int pixelCount = ${pixelCount};
-    const int deviceCount = ${devices.length};
 
     ${devices.map((device, index) => {
         const pixelStart = devices.slice(0, index).map(d => d.pixelCount).reduce((a, b) => a + b, 0);
@@ -82,14 +68,15 @@ namespace PixelMapper
     };
 
     \n`;
-    })}  
+    })} 
+
 } 
 \n`
     }
 
     const handleExportClick = () => {
         const content = type==='csv'?CSVContent():HeaderContent();
-        const filename = type==='csv'?`${name}.csv`:`${name}.h`;
+        const filename = type==='csv'?`${name}.csv`:`${name}.hpp`;
 
         var downloadLink = document.createElement("a");
         downloadLink.href = URL.createObjectURL(
