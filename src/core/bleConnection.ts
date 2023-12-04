@@ -92,6 +92,8 @@ export class BLEConnection implements IConnection {
         }
     }
 
+    setDim = (dim:number) => {} //TODO
+
     close = () => {
         console.log('closing')
         this.server?.disconnect()

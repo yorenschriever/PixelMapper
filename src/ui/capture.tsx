@@ -16,7 +16,7 @@ export const Capture = () => {
     const numSlices = encoder.GetCodeLength()
 
     const { setCapturing, setExposure, captureImage, videoRef, cameraReady, capturing } = useVideo()
-    const { connectionReady, setAllLeds, sendSlice } = useDevices()
+    const { connectionReady, setAllLeds, sendSlice, setDim } = useDevices()
 
     const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -56,6 +56,10 @@ export const Capture = () => {
         setCapturing(false);
     }
 
+    const handleDimChange = (e:React.FormEvent<HTMLInputElement>) => {
+        setDim(parseInt(e.currentTarget.value));
+    }
+
     return <>
         <video ref={videoRef} className="videoPreview" />
         <button
@@ -65,5 +69,6 @@ export const Capture = () => {
         >
             Go
         </button>
+        <input type="range" min="1" max="255" onChange={handleDimChange}></input>Dim
     </>
 }

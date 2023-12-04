@@ -30,4 +30,10 @@ export class DevicesController {
             return device.connection.sendData(sliceValues)
         })
     )
+
+    setDim = (dim:number) => {
+        this.deviceControllers.map(devicecontroller =>
+            devicecontroller.connection.setDim(dim)
+        )
+    }
 }

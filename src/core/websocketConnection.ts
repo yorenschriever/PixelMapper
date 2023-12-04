@@ -4,6 +4,7 @@ import { IConnection, StateListener, States } from "./IConnection"
 export class WebsocketConnection implements IConnection {
     socket?: WebSocket
     listeners: StateListener[] = []
+    dim:number=255
 
     constructor(device: Device) {
         if (device.hostname==="")
@@ -42,12 +43,14 @@ export class WebsocketConnection implements IConnection {
     sendData = (values: boolean[]) => {
         if (this.getState() !== States.Connected)
             throw Error('WebsocketDevice cannot set data, because it is in state ' + this.getState());
-        this.socket!.send(new Uint8Array(values.map(i => i ? 255 : 0)))
+        this.socket!.send(new Uint8Array(values.map(i => i ? this.dim : 0)))
 
         return new Promise<void>((acc) => {
             this.socket!.onmessage = (event) => { acc() }
         })
     }
+
+    setDim = (dim:number) => this.dim = dim;
 
     close = () => {
         this.socket?.close()

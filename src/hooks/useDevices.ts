@@ -29,10 +29,12 @@ export const useDevices = () => {
 
     const setAllLeds = (status: boolean) => controller.current.setAll(status)
     const sendSlice = (index: number, encoder: IEncoder) => controller.current.sendSlice(index, encoder)
+    const setDim = (dim:number) => controller.current.setDim(dim)
 
     return {
         connectionReady,
         setAllLeds,
-        sendSlice
+        sendSlice,
+        setDim
     }
 }
