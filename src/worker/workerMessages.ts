@@ -23,6 +23,10 @@ export type MessageToWorkerType = {
     sliceImages: ImageData[]
     numPixels: number
     encoderType: EncoderType
+} | {
+    type: "EXPOSUREIMG"
+    imageA: ImageData
+    imageB: ImageData
 }
 
 export type MessageFromWorkerType = {
@@ -48,4 +52,7 @@ export type MessageFromWorkerType = {
     img: ImageData
     code: number
     index:number
+} | {
+    type: "EXPOSURERESULT"
+    img: ImageData
 }

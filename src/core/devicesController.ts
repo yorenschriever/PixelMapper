@@ -19,6 +19,14 @@ export class DevicesController {
         )
     )
 
+    setHalf = (whichHalf: 0 | 1) => Promise.all(
+        this.deviceControllers.map(devicecontroller =>
+            devicecontroller.connection.sendData(
+                Array(devicecontroller.device.pixelCount).fill(false).map((_, i) => i % 2 === whichHalf)
+            )
+        )
+    )
+
     sendSlice = (slice: number, encoder: IEncoder) => Promise.all(
         this.deviceControllers.map((device, index) => {
             const pixelStart = this.deviceControllers.slice(0, index).map(d => d.device.pixelCount).reduce((a, b) => a + b, 0);
@@ -31,7 +39,7 @@ export class DevicesController {
         })
     )
 
-    setDim = (dim:number) => {
+    setDim = (dim: number) => {
         this.deviceControllers.map(devicecontroller =>
             devicecontroller.connection.setDim(dim)
         )

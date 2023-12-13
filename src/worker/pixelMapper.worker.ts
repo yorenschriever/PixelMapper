@@ -2,6 +2,7 @@
 /* eslint-disable no-restricted-globals */
 
 import { PixelMapper } from "./pixelMapper";
+import { imageDataFromMat } from "./imageDataFromMat";
 import { MessageFromWorkerType, MessageToWorkerType } from "./workerMessages";
 
 const ctx = self as any;
@@ -44,6 +45,18 @@ ctx.addEventListener("message", (event:MessageEvent<MessageToWorkerType>) => {
                 body.numPixels,
                 body.encoderType
             )
+            break;
+        case "EXPOSUREIMG":
+            const img = 
+                pixelMapper.calculateDifference(
+                    cv.matFromImageData(body.imageA), 
+                    cv.matFromImageData(body.imageB)
+                )
+            postMessage({
+                type: 'EXPOSURERESULT',
+                img: imageDataFromMat(img)
+            })
+            img.delete();
             break;
         default:
             break;

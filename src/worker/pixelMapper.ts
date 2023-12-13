@@ -273,4 +273,16 @@ export class PixelMapper {
     //     //TODO
     //     return image
     // }
+
+    calculateDifference(imageA:cv.Mat, imageB:cv.Mat)
+    {
+        cv.cvtColor(imageA, imageA, cv.COLOR_RGB2GRAY)
+        cv.cvtColor(imageB, imageB, cv.COLOR_RGB2GRAY)
+
+        const prepared = new cv.Mat();
+        cv.absdiff(imageA,imageB,prepared)
+
+        prepared.convertTo(prepared, -1, 2.2, -0.25)
+        return prepared;
+    }
 }

@@ -27,14 +27,16 @@ export const useDevices = () => {
         }
     })
 
-    const setAllLeds = (status: boolean) => controller.current.setAll(status)
-    const sendSlice = (index: number, encoder: IEncoder) => controller.current.sendSlice(index, encoder)
-    const setDim = (dim:number) => controller.current.setDim(dim)
+    const setAllLeds = useCallback((status: boolean) => controller.current.setAll(status),[])
+    const setHalf = useCallback((whichHalf: 0|1) => controller.current.setHalf(whichHalf),[])
+    const sendSlice = useCallback((index: number, encoder: IEncoder) => controller.current.sendSlice(index, encoder),[])
+    const setDim = useCallback((dim:number) => controller.current.setDim(dim),[])
 
     return {
         connectionReady,
         setAllLeds,
         sendSlice,
-        setDim
+        setDim,
+        setHalf
     }
 }

@@ -52,10 +52,9 @@ export const compressedImageToCanvas = (image: CompressedImage, canvas: HTMLCanv
 }
 
 export const imageDataTocanvas = (image: ImageData, canvas: HTMLCanvasElement) => {
-    var c = canvas;
-    c.width = image.width
-    c.height = image.height
-    var ctx = c.getContext("2d")!;
+    canvas.width = image.width
+    canvas.height = image.height
+    var ctx = canvas.getContext("2d")!;
     ctx.putImageData(image, 0, 0)
 }
 
